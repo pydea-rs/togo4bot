@@ -31,12 +31,12 @@ func autoLoad(togos *Togo.TogoList) {
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
+	/*defer func() {
 		err := recover()
 		if err != nil {
 			log.Fatal("Something fucked up: ", err)
 		}
-	}()
+	}()*/
 
 	var togos Togo.TogoList
 	autoLoad(&togos)
