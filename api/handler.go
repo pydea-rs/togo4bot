@@ -128,8 +128,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			case "$":
 				// set or update a togo
 				// only for today togos
-				togos.Update(terms[i+1:])
-				response = "Done!"
+				response = togos.Update(terms[i+1:])
 
 			}
 
