@@ -7,8 +7,6 @@ import (
     "github.com/go-telegram-bot-api/telegram-bot-api"
     "io/ioutil"
 	Togo "github.com/pya-h/Togo"
-	// "bufio"
-	// "context"
 	"log"
 	"strings"
 )
