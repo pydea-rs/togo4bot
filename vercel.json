@@ -1,6 +1,6 @@
 {
     "functions": {
-        "main.go": {
+        "api/handler.go": {
             "memory": 1024,
             "maxDuration": 10
         }
