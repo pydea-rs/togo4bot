@@ -13,7 +13,7 @@ import (
 
 type Response struct {
     Msg string `json:"text"`
-    ChatID uint64 `json:"chat_id"`
+    ChatID int64 `json:"chat_id"`
     Method string `json:"method"`
 }
 
