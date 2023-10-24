@@ -54,15 +54,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
     //if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-		input = update.Message.Text[:len(input)-1] // remove '\n' char from the end of string
+		input := update.Message.Text[:len(update.Message.Text)-1] // remove '\n' char from the end of string
 		terms := strings.Split(input, "    ")
-		num_of_terms := len(terms)
+		numOfTerms := len(terms)
 		var response string
 		var now Togo.Date = Togo.Today()
-		for i := 0; i < num_of_terms; i++ {
+		for i := 0; i < numOfTerms; i++ {
 			switch terms[i] {
 			case "+":
-				if num_of_terms > 1 {
+				if numOfTerms > 1 {
 
 					togo := Togo.Extract(terms[i+1:], togos.NextID())
 					if togo.Date.Short() == now.Short() {
@@ -78,24 +78,24 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 					response = "You must provide some values!"
 				}
 			case "#":
-				if i+1 < num_of_terms && terms[i+1] == "-a" {
-					all_togos, err := Togo.Load(false)
+				if i+1 < numOfTerms && terms[i+1] == "-a" {
+					allTogos, err := Togo.Load(false)
 					if err != nil {
 						panic(err)
 					}
-					response = all_togos.ToString()
+					response = allTogos.ToString()
 				} else {
 					response = togos.ToString()
 				}
 			case "%":
 				var target *Togo.TogoList = &togos
 				scope := "Today's"
-				if i+1 < num_of_terms && terms[i+1] == "-a" {
-					all_togos, err := Togo.Load(false)
+				if i+1 < numOfTerms && terms[i+1] == "-a" {
+					allTogos, err := Togo.Load(false)
 					if err != nil {
 						panic(err)
 					}
-					target = &all_togos
+					target = &allTogos
 					scope = "Total"
 				}
 				progress, completedInPercent, completed, extra, total := (*target).ProgressMade()
