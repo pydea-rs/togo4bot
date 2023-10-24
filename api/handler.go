@@ -61,7 +61,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			}
 		}()
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-		input := update.Message.Text[:len(update.Message.Text)-1] // remove '\n' char from the end of string
+		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "    ")
 		numOfTerms := len(terms)
 		var response string = "What?"
