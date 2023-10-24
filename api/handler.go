@@ -6,7 +6,7 @@ import (
     "encoding/json"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
     "io/ioutil"
-	Togo "github.com/pya-h/Togo"
+	Togo "github.com/pya-h/togo4bot/Togo"
 	"log"
 	"strings"
     "os"
