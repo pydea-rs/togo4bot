@@ -51,7 +51,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
         log.Fatal("Error en el update →", err)
     }
     log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-	w.Header().Add("Content-Type", "application/json")
+	res.Header().Add("Content-Type", "application/json")
 
     //if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
