@@ -1,0 +1,2 @@
+Run this:
+go install
