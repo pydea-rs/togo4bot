@@ -36,6 +36,7 @@ func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
 	msg, _ := json.Marshal( data )
 	log.Printf("Response %s", string(msg))
 	fmt.Fprintf(*res,string(msg))
+	log.Printf("Response %s", string(msg))
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +58,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			err := recover()
 			if err != nil {
 				SendMessage(&w, update.Message.Chat.ID, fmt.Sprint(err))
-				log.Printf("Response %s", string(msg))
+				//log.Printf("Response %s", string(msg))
 				r.Body.Close()
 			}
 		}()
@@ -126,7 +127,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 		}
 		// msg.ReplyToMessageID = update.Message.MessageID
-		log.Printf("Response %s", string(msg))
+
 		SendMessage(&w, update.Message.Chat.ID, response)
 	}
 
