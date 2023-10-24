@@ -1,8 +1,13 @@
 # Togo4: 2nd Street Project
-    Telegram bot version of TogoFor. for managing my todos, in order to make me go for them.
+    Telegram bot (By webhook) version of TogoFor. for managing my todos, in order to make me go for them. 
 # Language: GO
 
-# Hint
+# Notes:
+Set these Environmental Variables for start:
+TELEGRAM_TOKEN=token
+POSTGRES_URL=postgres connection string
+
+# Commands
 # +: New Togo:
 => ... +   title   [=  weight]    [+p   progress_till_now]   [:   description]    [+x | -x]   [@  start_date_as_how_many_days_from_now    start_time_as_hh:mm]    [NEXT_COMMAND]
 
@@ -33,17 +38,10 @@
 *   all params between [] are optional.
 
 # Remember:
-*   The flag list separator is \t (TAB) character. space character will be evaluated as a part f the current flag's param. do not be mistaken.
+*   The flag list separator is 3 spaces. space character will be evaluated as a part f the current flag's param. do not be mistaken.
 *   in add new togo syntax, all flags are optional except for the title, meaning that you can simply add new togos even with specifying the title only such as:
 =>  +   new togo here
 *   use -a flag for % and # commands to expand the togos range to ALL Times.
-# How to use:
-    first install Togo package
-    then:
-
-    go mod init togo4
-    go mod tidy
-    go run togo4.go
     
 # P.S.:
 	Street Project, means that this one is also coded while walking the streets.
