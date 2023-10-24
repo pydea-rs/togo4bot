@@ -9,7 +9,7 @@ import (
     "io/ioutil"
 	Togo "github.com/pya-h/Togo"
 	"bufio"
-	chrono "github.com/gochrono/chrono"
+	// chrono "github.com/gochrono/chrono"
 	"context"
 	"log"
 	"strings"
@@ -29,8 +29,8 @@ func autoLoad(togos *Togo.TogoList) {
 	}
 	*togos = tg
 	today := time.Now()
-	mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
-		chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
+	// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
+	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 
 }
 
