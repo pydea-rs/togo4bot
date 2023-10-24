@@ -29,7 +29,7 @@ func autoLoad(togos *Togo.TogoList) {
 	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 */
 }
-func SendMessage(res *http.ResponseWriter, chatID uint64, text string) {
+func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
 	data := Response{ Msg: text,
 		Method: "sendMessage",
 		ChatID: chatID}
