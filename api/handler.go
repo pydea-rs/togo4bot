@@ -62,7 +62,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		}()
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
-		terms := strings.Split(input, "\n")
+		terms := strings.Split(input, "   ")
 		numOfTerms := len(terms)
 		var response string = "What?"
 		var now Togo.Date = Togo.Today()
@@ -92,7 +92,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 					}
 					response = allTogos.ToString()
 				} else {
-					response = togos[0].Info()
+					response = togos.ToString()
 				}
 			case "%":
 				var target *Togo.TogoList = &togos
