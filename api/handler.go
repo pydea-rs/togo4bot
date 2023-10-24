@@ -4,11 +4,12 @@ import (
     "fmt"
     "net/http"
     "encoding/json"
-    "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
     "io/ioutil"
 	Togo "github.com/pya-h/Togo"
 	"log"
 	"strings"
+    "os"
 )
 
 type Response struct {
@@ -35,11 +36,11 @@ func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
 		ChatID: chatID}
 	msg, _ := json.Marshal( data )
 	log.Printf("Response %s", string(msg))
-	fmt.Fprintf(*res,string(msg))
-	log.Printf("Response %s", string(msg))
+//	fmt.Fprintf(*res,string(msg))
+	(*res).Write(msg)
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func Handler(res http.ResponseWriter, r *http.Request) {
 	var togos Togo.TogoList
 	autoLoad(&togos)
 
@@ -57,11 +58,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				SendMessage(&w, update.Message.Chat.ID, fmt.Sprint(err))
-				//log.Printf("Response %s", string(msg))
-				r.Body.Close()
+				SendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err))
 			}
 		}()
+
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
@@ -97,16 +97,17 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				} else {
 					result = togos.ToString()
 				}
-				bot, err := tgbotapi.NewBotAPI("6599650500:AAEVpmrVg3BAIy4x8i1W63eRCuyVckyBEug")
-				if err != nil {
-					log.Panic(err)
+				bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
+				if err == nil {
+					for _, tg := range result {
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, tg)
+						// msg.ReplyToMessageID = update.Message.MessageID
+						bot.Send(msg)
+					}
+					return
+				} else {
+					response = "I can't send you the details!"
 				}
-				for _, tg := range result {
-					msg := tgbotapi.NewMessage(update.Message.Chat.ID, tg)
-					bot.Send(msg)
-					//SendMessage(&w, update.Message.Chat.ID, tg)
-				}
-				response = "Done!"
 			case "%":
 				var target *Togo.TogoList = &togos
 				scope := "Today's"
@@ -133,9 +134,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
-		// msg.ReplyToMessageID = update.Message.MessageID
 
-		SendMessage(&w, update.Message.Chat.ID, response)
+		SendMessage(&res, update.Message.Chat.ID, response)
 	}
 
 }
