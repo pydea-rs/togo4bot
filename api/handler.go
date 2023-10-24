@@ -92,7 +92,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 					}
 					response = allTogos.ToString()
 				} else {
-					response = togos.ToString()
+					response = togos[0].Info()
 				}
 			case "%":
 				var target *Togo.TogoList = &togos
