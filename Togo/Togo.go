@@ -42,9 +42,9 @@ type Togo struct {
 }
 
 func (togo Togo) Save() {
-	const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id INTEGER NOT NULL PRIMARY KEY,
+	/*const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id INTEGER NOT NULL PRIMARY KEY,
 			title VARCHAR(64) NOT NULL, description VARCHAR(256), weight INTEGER, extra INTEGER,
-			progress INTEGER, date timestamp with time zone, duration INTEGER)`
+			progress INTEGER, date timestamp with time zone, duration INTEGER)`*/
 
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
 
@@ -52,9 +52,9 @@ func (togo Togo) Save() {
 		panic(err)
 	}
 	defer db.Close()
-	if _, err := db.Exec(CREATE_TABLE_QUERY); err != nil {
+	/*if _, err := db.Exec(CREATE_TABLE_QUERY); err != nil {
 		panic(err)
-	}
+	}*/
 	extra := 0
 	if togo.Extra {
 		extra = 1
