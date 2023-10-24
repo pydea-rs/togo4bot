@@ -9,7 +9,6 @@ import (
 	Togo "github.com/pya-h/Togo"
 	"log"
 	"strings"
-	"time"
 )
 
 type Response struct {
@@ -40,7 +39,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	var togos Togo.TogoList
-	//autoLoad(&togos)
+	autoLoad(&togos)
 
     defer r.Body.Close()
     body, _ := ioutil.ReadAll(r.Body)
