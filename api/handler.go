@@ -120,7 +120,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					scope = "Total"
 				}
 				progress, completedInPercent, completed, extra, total := (*target).ProgressMade()
-				response = fmt.Sprintf("%s Progress: %3.2f%% \n(%3.2f%% Completed),\nStatistics: %d / %d",
+				response = fmt.Sprintf("%s Progress: %3.2f%% \n%3.2f%% Completed\nStatistics: %d / %d",
 					scope, progress, completedInPercent, completed, total)
 				if extra > 0 {
 					response = fmt.Sprintf("%s[+%d]\n", response, extra)
