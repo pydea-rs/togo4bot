@@ -31,12 +31,7 @@ func autoLoad(togos *Togo.TogoList) {
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	/*defer func() {
-		err := recover()
-		if err != nil {
-			log.Fatal("Something fucked up: ", err)
-		}
-	}()*/
+
 
 	var togos Togo.TogoList
 	autoLoad(&togos)
@@ -51,6 +46,20 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
     //if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
+		defer func() {
+			err := recover()
+			if err != nil {
+				data := Response{ Msg: fmt.Sprint(err),
+					Method: "sendMessage",
+					ChatID: update.Message.Chat.ID }
+
+				msg, _ := json.Marshal( data )
+				log.Printf("Response %s", string(msg))
+				w.Header().Add("Content-Type", "application/json")
+				fmt.Fprintf(w,string(msg))
+				r.Body.Close()
+			}
+		}()
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)-1] // remove '\n' char from the end of string
 		terms := strings.Split(input, "    ")
