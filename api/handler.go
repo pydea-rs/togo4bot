@@ -13,7 +13,7 @@ import (
 
 type Response struct {
     Msg string `json:"text"`
-    ChatID int64 `json:"chat_id"`
+    ChatID uint64 `json:"chat_id"`
     Method string `json:"method"`
 }
 
@@ -29,10 +29,16 @@ func autoLoad(togos *Togo.TogoList) {
 	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 */
 }
+func SendMessage(res *http.ResponseWriter, chatID uint64, text string) {
+	data := Response{ Msg: text,
+		Method: "sendMessage",
+		ChatID: chatID}
+	msg, _ := json.Marshal( data )
+	log.Printf("Response %s", string(msg))
+	fmt.Fprintf(*res,string(msg))
+}
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-
-
 	var togos Togo.TogoList
 	autoLoad(&togos)
 
@@ -43,20 +49,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
         log.Fatal("Error en el update →", err)
     }
     log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+	w.Header().Add("Content-Type", "application/json")
 
     //if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
 		defer func() {
 			err := recover()
 			if err != nil {
-				data := Response{ Msg: fmt.Sprint(err),
-					Method: "sendMessage",
-					ChatID: update.Message.Chat.ID }
-
-				msg, _ := json.Marshal( data )
+				SendMessage(&w, update.Message.Chat.ID, fmt.Sprint(err))
 				log.Printf("Response %s", string(msg))
-				w.Header().Add("Content-Type", "application/json")
-				fmt.Fprintf(w,string(msg))
 				r.Body.Close()
 			}
 		}()
@@ -85,14 +86,18 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 					response = "You must provide some values!"
 				}
 			case "#":
+				var result []string
 				if i+1 < numOfTerms && terms[i+1] == "-a" {
 					allTogos, err := Togo.Load(false)
 					if err != nil {
 						panic(err)
 					}
-					response = allTogos.ToString()
+					result = allTogos.ToString()
 				} else {
-					response = togos.ToString()
+					result = togos.ToString()
+				}
+				for _, tg := range result {
+					SendMessage(&w, update.Message.Chat.ID, tg)
 				}
 			case "%":
 				var target *Togo.TogoList = &togos
@@ -121,14 +126,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 		}
 		// msg.ReplyToMessageID = update.Message.MessageID
-		data := Response{ Msg: response,
-			Method: "sendMessage",
-			ChatID: update.Message.Chat.ID }
-	
-		msg, _ := json.Marshal( data )
 		log.Printf("Response %s", string(msg))
-		w.Header().Add("Content-Type", "application/json")
-		fmt.Fprintf(w,string(msg))
+		SendMessage(&w, update.Message.Chat.ID, response)
 	}
 
 }
