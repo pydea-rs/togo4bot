@@ -22,7 +22,7 @@ type Response struct {
 
 
 func autoLoad(togos *Togo.TogoList) {
-	tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
+	/*tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
 	if err != nil {
 		fmt.Println("Loading failed: ", err)
 	}
@@ -30,7 +30,7 @@ func autoLoad(togos *Togo.TogoList) {
 	today := time.Now()
 	// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
 	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
-
+*/
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
