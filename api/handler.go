@@ -6,15 +6,14 @@ import (
     "time"
     "encoding/json"
     "github.com/go-telegram-bot-api/telegram-bot-api"
-    "log"
     "io/ioutil"
+	Togo "github.com/pya-h/Togo"
+	"bufio"
+	chrono "github.com/gochrono/chrono"
+	"context"
+	"log"
+	"strings"
 )
-
-type Hito struct {
-    URI  string
-    Title string
-    fecha time.Time
-}
 
 type Response struct {
     Msg string `json:"text"`
@@ -22,42 +21,30 @@ type Response struct {
     Method string `json:"method"`
 }
 
-var hitos = []Hito {
-    Hito {
-        URI: "0.Repositorio",
-        Title: "Datos básicos y repo",
-        fecha: time.Date(2020, time.September, 29, 11, 30, 0, 0, time.UTC),
-    },
-    Hito {
-        URI: "1.Infraestructura",
-        Title: "HUs y entidad principal",
-        fecha: time.Date(2020, time.October, 6, 11, 30, 0, 0, time.UTC),
-    },
-    Hito {
-        URI: "2.Tests",
-        Title: "Tests iniciales",
-        fecha: time.Date(2020, time.October, 16, 11, 30, 0, 0, time.UTC),
-    },
-    Hito {
-        URI: "3.Contenedores",
-        Title: "Contenedores",
-        fecha: time.Date(2020, time.October, 26, 11, 30, 0, 0, time.UTC),
-    },
-    Hito {
-        URI: "4.CI",
-        Title: "Integración continua",
-        fecha: time.Date(2020, time.November, 6, 23, 59, 0, 0, time.UTC),
-    },
-    Hito {
-        URI: "5.Serverless",
-        Title: "Trabajando con funciones serverless",
-        fecha: time.Date(2020, time.November, 24, 11, 30, 0, 0, time.UTC),
-    },
+
+func autoLoad(togos *Togo.TogoList) {
+	tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
+	if err != nil {
+		fmt.Println("Loading failed: ", err)
+	}
+	*togos = tg
+	today := time.Now()
+	mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
+		chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 
 }
 
-
 func Handler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		err := recover()
+		if err != nil {
+			log.Fatal("Something fucked up: ", err)
+		}
+	}()
+
+	var togos Togo.TogoList
+	//autoLoad(&togos)
+
     defer r.Body.Close()
     body, _ := ioutil.ReadAll(r.Body)
     var update tgbotapi.Update
@@ -65,41 +52,77 @@ func Handler(w http.ResponseWriter, r *http.Request) {
         log.Fatal("Error en el update →", err)
     }
     log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-    currentTime := time.Now()
-    var next int
-    var queda time.Duration
-    for indice, hito := range hitos {
-        if ( hito.fecha.After( currentTime ) ) {
-            next = indice
-            queda = hito.fecha.Sub( currentTime )
-        }
-    }
-    if update.Message.IsCommand() {
-        text := ""
-        if ( next == 0 ) {
-            text = "Ninguna entrega próxima"
-        } else {
 
-            switch update.Message.Command() {
-            case "kk":
-                text = queda.String()
-            case "kekeda":
-                text = fmt.Sprintf( "→ Próximo hito %s\n🔗 https://jj.github.io/IV/documentos/proyecto/%s\n📅 %s",
-                    hitos[next].Title,
-                    hitos[next].URI,
-                    hitos[next].fecha.String(),
-                )
-            default:
-                text = "Usa /kk para lo que queda para el próximo hito, /kekeda para + detalle"
-            }
-        }
-        data := Response{ Msg: text,
-            Method: "sendMessage",
-            ChatID: update.Message.Chat.ID }
+    //if update.Message.IsCommand() {
+	if update.Message != nil { // If we got a message
+		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+		input = update.Message.Text[:len(input)-1] // remove '\n' char from the end of string
+		terms := strings.Split(input, "    ")
+		num_of_terms := len(terms)
+		var response string
+		var now Togo.Date = Togo.Today()
+		for i := 0; i < num_of_terms; i++ {
+			switch terms[i] {
+			case "+":
+				if num_of_terms > 1 {
 
-        msg, _ := json.Marshal( data )
-        log.Printf("Response %s", string(msg))
-        w.Header().Add("Content-Type", "application/json")
-        fmt.Fprintf(w,string(msg))
-    }
+					togo := Togo.Extract(terms[i+1:], togos.NextID())
+					if togo.Date.Short() == now.Short() {
+						togos = togos.Add(&togo)
+						if togo.Date.After(now.Time) {
+							togo.Schedule()
+						}
+					}
+
+					togo.Save()
+					response = "Done!"
+				} else {
+					response = "You must provide some values!"
+				}
+			case "#":
+				if i+1 < num_of_terms && terms[i+1] == "-a" {
+					all_togos, err := Togo.Load(false)
+					if err != nil {
+						panic(err)
+					}
+					response = all_togos.ToString()
+				} else {
+					response = togos.ToString()
+				}
+			case "%":
+				var target *Togo.TogoList = &togos
+				scope := "Today's"
+				if i+1 < num_of_terms && terms[i+1] == "-a" {
+					all_togos, err := Togo.Load(false)
+					if err != nil {
+						panic(err)
+					}
+					target = &all_togos
+					scope = "Total"
+				}
+				progress, completedInPercent, completed, extra, total := (*target).ProgressMade()
+				response = fmt.Sprintf("%s Progress: %3.2f%% (%3.2f%% Completed),\nStatistics: %d / %d",
+					scope, progress, completedInPercent, completed, total)
+				if extra > 0 {
+					response = fmt.Sprintf("%s[+%d]\n", response, extra)
+				}
+			case "$":
+				// set or update a togo
+				// only for today togos
+				togos.Update(terms[i+1:])
+				response = "Done!"
+
+			}
+		}
+		// msg.ReplyToMessageID = update.Message.MessageID
+		data := Response{ Msg: response,
+			Method: "sendMessage",
+			ChatID: update.Message.Chat.ID }
+	
+		msg, _ := json.Marshal( data )
+		log.Printf("Response %s", string(msg))
+		w.Header().Add("Content-Type", "application/json")
+		fmt.Fprintf(w,string(msg))
+	}
+
 }
