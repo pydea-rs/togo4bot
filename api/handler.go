@@ -9,6 +9,7 @@ import (
 	Togo "github.com/pya-h/Togo"
 	"log"
 	"strings"
+	"time"
 )
 
 type Response struct {
@@ -18,11 +19,12 @@ type Response struct {
 }
 
 func autoLoad(togos *Togo.TogoList) {
-	/*tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
+	tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
 	if err != nil {
 		fmt.Println("Loading failed: ", err)
 	}
 	*togos = tg
+	/*
 	today := time.Now()
 	// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
 	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
