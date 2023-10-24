@@ -106,7 +106,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					}
 					return
 				} else {
-					response = "I can't send you the details!"
+					response = fmt.Sprint(err)// "I can't send you the details!"
 				}
 			case "%":
 				var target *Togo.TogoList = &togos
