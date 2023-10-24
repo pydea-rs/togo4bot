@@ -3,7 +3,6 @@ package handler
 import (
     "fmt"
     "net/http"
-    "time"
     "encoding/json"
     "github.com/go-telegram-bot-api/telegram-bot-api"
     "io/ioutil"
