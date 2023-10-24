@@ -62,7 +62,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		}()
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
-		terms := strings.Split(input, "    ")
+		terms := strings.Split(input, "\n")
 		numOfTerms := len(terms)
 		var response string = "What?"
 		var now Togo.Date = Togo.Today()
@@ -106,7 +106,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 					scope = "Total"
 				}
 				progress, completedInPercent, completed, extra, total := (*target).ProgressMade()
-				response = fmt.Sprintf("%s Progress: %3.2f%% (%3.2f%% Completed),\nStatistics: %d / %d",
+				response = fmt.Sprintf("%s Progress: %3.2f%% \n(%3.2f%% Completed),\nStatistics: %d / %d",
 					scope, progress, completedInPercent, completed, total)
 				if extra > 0 {
 					response = fmt.Sprintf("%s[+%d]\n", response, extra)
