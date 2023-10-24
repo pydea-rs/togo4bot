@@ -17,7 +17,6 @@ type Response struct {
     Method string `json:"method"`
 }
 
-
 func autoLoad(togos *Togo.TogoList) {
 	/*tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
 	if err != nil {
