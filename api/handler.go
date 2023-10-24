@@ -64,7 +64,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		input := update.Message.Text[:len(update.Message.Text)-1] // remove '\n' char from the end of string
 		terms := strings.Split(input, "    ")
 		numOfTerms := len(terms)
-		var response string
+		var response string = "What?"
 		var now Togo.Date = Togo.Today()
 		for i := 0; i < numOfTerms; i++ {
 			switch terms[i] {
@@ -118,6 +118,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				response = "Done!"
 
 			}
+
 		}
 		// msg.ReplyToMessageID = update.Message.MessageID
 		data := Response{ Msg: response,
