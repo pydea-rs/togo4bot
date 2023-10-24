@@ -97,9 +97,16 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				} else {
 					result = togos.ToString()
 				}
-				for _, tg := range result {
-					SendMessage(&w, update.Message.Chat.ID, tg)
+				bot, err := tgbotapi.NewBotAPI("6599650500:AAEVpmrVg3BAIy4x8i1W63eRCuyVckyBEug")
+				if err != nil {
+					log.Panic(err)
 				}
+				for _, tg := range result {
+					msg := tgbotapi.NewMessage(update.Message.Chat.ID, tg)
+					bot.Send(msg)
+					//SendMessage(&w, update.Message.Chat.ID, tg)
+				}
+				response = "Done!"
 			case "%":
 				var target *Togo.TogoList = &togos
 				scope := "Today's"
