@@ -15,8 +15,6 @@ var lastUsedId uint64 = 0
 
 // var taskScheduler chrono.TaskScheduler = chrono.NewDefaultTaskScheduler()
 
-var timeZone, _ = time.LoadLocation("Asia/Tehran")
-
 type Date struct{ time.Time }
 
 func (d Date) Get() string {
@@ -29,7 +27,10 @@ func (d Date) Short() string {
 }
 
 func Today() Date {
-	return Date{time.Now().In(timeZome)}
+ ‌ if timeZone, err := time.LoadLocation("Asia/Tehran"); err == nil {
+	    return Date{time.Now().In(timeZome)}
+  }
+  return Date{time.Now()}
 }
 
 // Struct Togo start
