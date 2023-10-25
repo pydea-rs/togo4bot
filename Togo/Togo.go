@@ -262,7 +262,11 @@ func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 			if lastUsedId < togo.Id {
 				lastUsedId = togo.Id
 			}
-			togo.Date = Date{date}
+			if timeZone, err := time.LoadLocation("Asia/Tehran"); err == nil {
+				togo.Date = Date{date.In(timeZone)}
+			} else {
+				togo.Date = Date{date}
+			}
 			togo.Duration *= time.Minute
 			if err != nil {
 				panic(err)
