@@ -64,7 +64,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			}
 		}()
 
-   autoLoad(update.Message.Chat.ID, &togos)
+		autoLoad(update.Message.Chat.ID, &togos)
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
@@ -138,6 +138,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				// set or update a togo
 				// only for today togos
 				response = togos.Update(update.Message.Chat.ID, terms[i+1:])
+			case "/now":
+				response = Togo.Today().Short()
 
 			}
 
