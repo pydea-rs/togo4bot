@@ -4,10 +4,11 @@ import (
 	// chrono "github.com/gochrono/chrono"
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 	"time"
+
 	_ "github.com/lib/pq" // postgres
-	"os"
 )
 
 var lastUsedId uint64 = 0
@@ -39,13 +40,13 @@ type Togo struct {
 	Extra       bool
 	Date        Date
 	Duration    time.Duration
-	OwnerId		int64 // telegram id
+	OwnerId     int64 // telegram id
 }
 
-func (togo Togo) Save() {
-	/*const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id INTEGER NOT NULL PRIMARY KEY, owner_id BIGINT NOT NULL,
-			title VARCHAR(64) NOT NULL, description VARCHAR(256), weight INTEGER, extra INTEGER,
-			progress INTEGER, date timestamp with time zone, duration INTEGER)`*/
+func (togo Togo) Save() uint64 {
+	/*const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id SERIAL PRIMARY KEY, owner_id BIGINT NOT NULL,
+	title VARCHAR(64) NOT NULL, description VARCHAR(256), weight INTEGER, extra INTEGER,
+	progress INTEGER, date timestamp with time zone, duration INTEGER)`*/
 
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
 
@@ -60,13 +61,16 @@ func (togo Togo) Save() {
 	if togo.Extra {
 		extra = 1
 	}
-	if _, err := db.Exec("INSERT INTO togos (id, title, description, weight, extra, progress, date, duration, owner_id) VALUES ($1, $2::varchar, $3::varchar, $4, $5, $6, $7, $8, $9)", 
-		togo.Id,
-		togo.Title, togo.Description, togo.Weight, extra, togo.Progress,
-		togo.Date.Time, togo.Duration.Minutes(), togo.OwnerId); err != nil {
+	if res, err := db.Exec("INSERT INTO togos (title, description, weight, extra, progress, date, duration, owner_id) VALUES ($1, $2::varchar, $3::varchar, $4, $5, $6, $7, $8)",
+		togo.OwnerId, togo.Title, togo.Description, togo.Weight, extra, togo.Progress,
+		togo.Date.Time, togo.Duration.Minutes()); err != nil {
 		panic(err)
+	} else if id, e := res.LastInsertId(); e == nil {
+		return uint64(id)
 	}
+	return 0
 }
+
 func (togo Togo) Schedule() {
 	/*_, err := taskScheduler.Schedule(func(ctx context.Context) {
 		fmt.Println("\nYour Next Togo:\n", togo.ToString(), "\n> ")
@@ -150,7 +154,7 @@ func (togo *Togo) setFields(terms []string) {
 
 }
 
-func (togo Togo) Update() {
+func (togo Togo) Update(ownerID int64) {
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
 
 	if err != nil {
@@ -162,9 +166,8 @@ func (togo Togo) Update() {
 	if togo.Extra {
 		extra = 1
 	}
-	if _, err := db.Exec("UPDATE togos SET description=$1, weight=$2, extra=$3, progress=$4, date=$5, duration=$6 WHERE id=$7", // TODO: check ownerId? (no need)
-		togo.Description, togo.Weight, extra, togo.Progress,
-		togo.Date.Time, togo.Duration.Minutes(), togo.Id); err != nil {
+	if _, err := db.Exec("UPDATE togos SET description=$1, weight=$2, extra=$3, progress=$4, date=$5, duration=$6 WHERE id=$7 AND owner_id=$8", // TODO: check ownerId? (no need)
+		togo.Description, togo.Weight, extra, togo.Progress, togo.Date.Time, togo.Duration.Minutes(), togo.Id, ownerID); err != nil {
 		panic(err)
 	}
 }
@@ -184,20 +187,11 @@ func (these TogoList) ToString() (result []string) {
 	for _, el := range these {
 		result = append(result, el.ToString())
 	}
-	return 
+	return
 }
 
 func (these TogoList) Add(new_togo *Togo) TogoList {
 	return append(these, *new_togo)
-}
-
-func (togos TogoList) NextID() (id uint64) {
-	id = uint64(len(togos)) // temporary
-	if id < lastUsedId {
-		lastUsedId++
-		id = lastUsedId
-	}
-	return
 }
 
 func (togos TogoList) ProgressMade() (progress float64, completedInPercent float64, completed uint64, extra uint64, total uint64) {
@@ -274,7 +268,7 @@ func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 	return
 }
 
-func (togos TogoList) Update(terms []string) string {
+func (togos TogoList) Update(chatID int64, terms []string) string {
 	var id uint64
 	if _, err := fmt.Sscan(terms[0], &id); err != nil {
 		panic(err)
@@ -292,18 +286,17 @@ func (togos TogoList) Update(terms []string) string {
 	if len(terms) > 1 && !isCommand(terms[1]) {
 
 		togos[targetIdx].setFields(terms)
-		togos[targetIdx].Update()
+		togos[targetIdx].Update(chatID)
 	}
 
 	return togos[targetIdx].ToString()
 }
 
-func Extract(ownerId int64, terms []string, nextID uint64) (togo Togo) {
+func Extract(ownerId int64, terms []string) (togo Togo) {
 	// setting default values
 	if togo.Title = terms[0]; togo.Title == "" {
 		togo.Title = "Untitled"
 	}
-	togo.Id = nextID
 	togo.OwnerId = ownerId
 	togo.Weight = 1
 	togo.Date = Date{time.Now()}

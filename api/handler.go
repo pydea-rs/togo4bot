@@ -1,21 +1,22 @@
 package handler
 
 import (
-    "fmt"
-    "net/http"
-    "encoding/json"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-    "io/ioutil"
-	Togo "github.com/pya-h/togo4bot/Togo"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"os"
 	"strings"
-    "os"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	Togo "github.com/pya-h/togo4bot/Togo"
 )
 
 type Response struct {
-    Msg string `json:"text"`
-    ChatID int64 `json:"chat_id"`
-    Method string `json:"method"`
+	Msg    string `json:"text"`
+	ChatID int64  `json:"chat_id"`
+	Method string `json:"method"`
 }
 
 func autoLoad(chatId int64, togos *Togo.TogoList) {
@@ -25,35 +26,35 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	}
 	*togos = tg
 	/*
-	today := time.Now()
-	// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
-	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
+		today := time.Now()
+		// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
+		// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 	*/
 }
 
 func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
-	data := Response{ Msg: text,
+	data := Response{Msg: text,
 		Method: "sendMessage",
 		ChatID: chatID}
-	msg, _ := json.Marshal( data )
+	msg, _ := json.Marshal(data)
 	log.Printf("Response %s", string(msg))
-//	fmt.Fprintf(*res,string(msg))
+	//	fmt.Fprintf(*res,string(msg))
 	(*res).Write(msg)
 }
 
 func Handler(res http.ResponseWriter, r *http.Request) {
 	var togos Togo.TogoList
 
-    defer r.Body.Close()
-    body, _ := ioutil.ReadAll(r.Body)
-    var update tgbotapi.Update
-    if err := json.Unmarshal(body,&update); err != nil {
-        log.Fatal("Error en el update →", err)
-    }
+	defer r.Body.Close()
+	body, _ := ioutil.ReadAll(r.Body)
+	var update tgbotapi.Update
+	if err := json.Unmarshal(body, &update); err != nil {
+		log.Fatal("Error en el update →", err)
+	}
 
 	res.Header().Add("Content-Type", "application/json")
-	
-    //if update.Message.IsCommand() {
+
+	//if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
 		autoLoad(update.Message.Chat.ID, &togos)
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
@@ -75,7 +76,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			case "+":
 				if numOfTerms > 1 {
 
-					togo := Togo.Extract(update.Message.Chat.ID, terms[i+1:], togos.NextID())
+					togo := Togo.Extract(update.Message.Chat.ID, terms[i+1:])
+					togo.Id = togo.Save()
 					if togo.Date.Short() == now.Short() {
 						togos = togos.Add(&togo)
 						if togo.Date.After(now.Time) {
@@ -83,7 +85,6 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 						}
 					}
 
-					togo.Save()
 					response = "Done!"
 				} else {
 					response = "You must provide some values!"
@@ -113,7 +114,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					}
 					return
 				} else {
-					response = fmt.Sprint(err)// "I can't send you the details!"
+					response = fmt.Sprint(err) // "I can't send you the details!"
 				}
 			case "%":
 				var target *Togo.TogoList = &togos
@@ -135,7 +136,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			case "$":
 				// set or update a togo
 				// only for today togos
-				response = togos.Update(terms[i+1:])
+				response = togos.Update(update.Message.Chat.ID, terms[i+1:])
 
 			}
 
