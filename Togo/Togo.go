@@ -144,7 +144,13 @@ func (togo *Togo) setFields(terms []string) {
 			} else if min >= 60 || min < 0 {
 				panic("Minute part must be between 0 and 59!")
 			}
-			togo.Date = Date{time.Date(today.Year(), today.Month(), today.Day(), hour, min, 0, 0, time.Local)}
+			if locale, err := time.LoadLocation("Asia/Tehran"); err == nil {
+
+				togo.Date = Date{time.Date(today.Year(), today.Month(), today.Day(), hour, min, 0, 0, locale)}
+			} else {
+				togo.Date = Date{time.Date(today.Year(), today.Month(), today.Day(), hour, min, 0, 0, time.Local)}
+
+			}
 			// get the actual date here
 		case "->":
 			i++
