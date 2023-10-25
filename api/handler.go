@@ -75,7 +75,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			case "+":
 				if numOfTerms > 1 {
 
-					togo := Togo.Extract(terms[i+1:], togos.NextID())
+					togo := Togo.Extract(update.Message.Chat.ID, terms[i+1:], togos.NextID())
 					if togo.Date.Short() == now.Short() {
 						togos = togos.Add(&togo)
 						if togo.Date.After(now.Time) {
@@ -101,10 +101,15 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				}
 				bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 				if err == nil {
-					for _, tg := range result {
-						msg := tgbotapi.NewMessage(update.Message.Chat.ID, tg)
-						// msg.ReplyToMessageID = update.Message.MessageID
-						bot.Send(msg)
+					if len(result) > 0 {
+
+						for _, tg := range result {
+							msg := tgbotapi.NewMessage(update.Message.Chat.ID, tg)
+							// msg.ReplyToMessageID = update.Message.MessageID
+							bot.Send(msg)
+						}
+					} else {
+						response = "Nothing!"
 					}
 					return
 				} else {

@@ -298,12 +298,13 @@ func (togos TogoList) Update(terms []string) string {
 	return togos[targetIdx].ToString()
 }
 
-func Extract(terms []string, nextID uint64) (togo Togo) {
+func Extract(ownerId int64, terms []string, nextID uint64) (togo Togo) {
 	// setting default values
 	if togo.Title = terms[0]; togo.Title == "" {
 		togo.Title = "Untitled"
 	}
 	togo.Id = nextID
+	togo.OwnerId = ownerId
 	togo.Weight = 1
 	togo.Date = Date{time.Now()}
 	(&togo).setFields(terms)
