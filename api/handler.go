@@ -56,7 +56,6 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 	//if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
-		autoLoad(update.Message.Chat.ID, &togos)
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		defer func() {
 			err := recover()
@@ -64,6 +63,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				SendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err))
 			}
 		}()
+
+   autoLoad(update.Message.Chat.ID, &togos)
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
