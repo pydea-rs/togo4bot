@@ -26,11 +26,15 @@ func (d Date) Short() string {
 	return fmt.Sprintf("%d-%d-%d", d.Year(), d.Month(), d.Day())
 }
 
-func Today() Date {
+func Now() time.Time {
 	if timeZone, err := time.LoadLocation("Asia/Tehran"); err == nil {
-		return Date{time.Now().In(timeZone)}
+		return time.Now().In(timeZone)
 	}
-	return Date{time.Now()}
+	return time.Now()
+}
+
+func Today() Date {
+	return Date{Now()}
 }
 
 // Struct Togo start
@@ -121,7 +125,7 @@ func (togo *Togo) setFields(terms []string) {
 		case "@":
 			// im++
 			i++
-			today := time.Now()
+			today := Now()
 			var delta int
 			if _, err := fmt.Sscan(terms[i], &delta); err != nil {
 				panic(err)
