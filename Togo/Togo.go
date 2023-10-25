@@ -224,7 +224,7 @@ func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 		defer db.Close()
 		// ***** BETTER ALGORITHM
 		// FIRST GET THE COUNT OF ROWS, then create a slice of that size and then load into that.
-		const SELECT_QUERY string = "SELECT * FROM togos WHERE owner_id=$1"
+		const SELECT_QUERY string = "SELECT (id, owner_id, title, description, weight, extra, progress, date, duration) FROM togos WHERE owner_id=$1"
 		/* if justToday {
 			today := Date{time.Now()}
 			next := Date{today.AddDate(0, 0, 1)}
@@ -243,7 +243,7 @@ func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 			var togo Togo
 			var date time.Time
 
-			err = rows.Scan(&togo.Id, &togo.Title, &togo.Description, &togo.Weight, &togo.Extra, &togo.Progress, &date, &togo.Duration, &togo.OwnerId)
+			err = rows.Scan(&togo.Id, &togo.OwnerId, &togo.Title, &togo.Description, &togo.Weight, &togo.Extra, &togo.Progress, &date, &togo.Duration)
 			if lastUsedId < togo.Id {
 				lastUsedId = togo.Id
 			}
