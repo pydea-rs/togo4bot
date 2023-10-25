@@ -139,7 +139,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				// only for today togos
 				response = togos.Update(update.Message.Chat.ID, terms[i+1:])
 			case "/now":
-				response = Togo.Today().Short()
+				response = Togo.Today().Get()
 
 			}
 
