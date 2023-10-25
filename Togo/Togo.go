@@ -27,10 +27,10 @@ func (d Date) Short() string {
 }
 
 func Today() Date {
- ‌ if timeZone, err := time.LoadLocation("Asia/Tehran"); err == nil {
-	    return Date{time.Now().In(timeZome)}
-  }
-  return Date{time.Now()}
+	if timeZone, err := time.LoadLocation("Asia/Tehran"); err == nil {
+		return Date{time.Now().In(timeZone)}
+	}
+	return Date{time.Now()}
 }
 
 // Struct Togo start
@@ -212,10 +212,10 @@ func (togos TogoList) ProgressMade() (progress float64, completedInPercent float
 			extra++
 		}
 	}
- if totalInPercent > 0 {
-	   progress *= 100 / float64(totalInPercent) // CHECK IF IT CALCULAFES DECIMAL PART OR NOT
-	   completedInPercent *= 100 / float64(totalInPercent)
- }
+	if totalInPercent > 0 {
+		progress *= 100 / float64(totalInPercent) // CHECK IF IT CALCULAFES DECIMAL PART OR NOT
+		completedInPercent *= 100 / float64(totalInPercent)
+	}
 	return
 }
 
