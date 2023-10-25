@@ -308,7 +308,7 @@ func Extract(ownerId int64, terms []string) (togo Togo) {
 	}
 	togo.OwnerId = ownerId
 	togo.Weight = 1
-	togo.Date = Date{time.Now()}
+	togo.Date = Today()
 	(&togo).setFields(terms)
 	return
 }
