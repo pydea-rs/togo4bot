@@ -30,6 +30,7 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 */
 }
+
 func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
 	data := Response{ Msg: text,
 		Method: "sendMessage",
@@ -49,6 +50,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
     if err := json.Unmarshal(body,&update); err != nil {
         log.Fatal("Error en el update →", err)
     }
+	
 	res.Header().Add("Content-Type", "application/json")
 	
     //if update.Message.IsCommand() {
