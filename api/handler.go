@@ -18,8 +18,8 @@ type Response struct {
     Method string `json:"method"`
 }
 
-func autoLoad(togos *Togo.TogoList) {
-	tg, err := Togo.Load(true) // load today's togos,  make(Togo.TogoList, 0)
+func autoLoad(chatId int64, togos *Togo.TogoList) {
+	tg, err := Togo.Load(chatId, true) // load today's togos,  make(Togo.TogoList, 0)
 	if err != nil {
 		fmt.Println("Loading failed: ", err)
 	}
@@ -42,7 +42,6 @@ func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
 
 func Handler(res http.ResponseWriter, r *http.Request) {
 	var togos Togo.TogoList
-	autoLoad(&togos)
 
     defer r.Body.Close()
     body, _ := ioutil.ReadAll(r.Body)
@@ -50,11 +49,12 @@ func Handler(res http.ResponseWriter, r *http.Request) {
     if err := json.Unmarshal(body,&update); err != nil {
         log.Fatal("Error en el update →", err)
     }
-    log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 	res.Header().Add("Content-Type", "application/json")
-
+	
     //if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
+		autoLoad(update.Message.Chat.ID, &togos)
+		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		defer func() {
 			err := recover()
 			if err != nil {
@@ -89,7 +89,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			case "#":
 				var result []string
 				if i+1 < numOfTerms && terms[i+1] == "-a" {
-					allTogos, err := Togo.Load(false)
+					allTogos, err := Togo.Load(update.Message.Chat.ID, false)
 					if err != nil {
 						panic(err)
 					}
@@ -112,7 +112,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				var target *Togo.TogoList = &togos
 				scope := "Today's"
 				if i+1 < numOfTerms && terms[i+1] == "-a" {
-					allTogos, err := Togo.Load(false)
+					allTogos, err := Togo.Load(update.Message.Chat.ID, false)
 					if err != nil {
 						panic(err)
 					}

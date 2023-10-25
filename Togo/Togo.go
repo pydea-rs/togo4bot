@@ -39,10 +39,11 @@ type Togo struct {
 	Extra       bool
 	Date        Date
 	Duration    time.Duration
+	OwnerId		int64 // telegram id
 }
 
 func (togo Togo) Save() {
-	/*const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id INTEGER NOT NULL PRIMARY KEY,
+	/*const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id INTEGER NOT NULL PRIMARY KEY, owner_id BIGINT NOT NULL,
 			title VARCHAR(64) NOT NULL, description VARCHAR(256), weight INTEGER, extra INTEGER,
 			progress INTEGER, date timestamp with time zone, duration INTEGER)`*/
 
@@ -59,10 +60,10 @@ func (togo Togo) Save() {
 	if togo.Extra {
 		extra = 1
 	}
-	if _, err := db.Exec("INSERT INTO togos (id, title, description, weight, extra, progress, date, duration) VALUES ($1, $2::varchar, $3::varchar, $4, $5, $6, $7, $8)", 
+	if _, err := db.Exec("INSERT INTO togos (id, title, description, weight, extra, progress, date, duration, owner_id) VALUES ($1, $2::varchar, $3::varchar, $4, $5, $6, $7, $8, $9)", 
 		togo.Id,
 		togo.Title, togo.Description, togo.Weight, extra, togo.Progress,
-		togo.Date.Time, togo.Duration.Minutes()); err != nil {
+		togo.Date.Time, togo.Duration.Minutes(), togo.OwnerId); err != nil {
 		panic(err)
 	}
 }
@@ -161,7 +162,7 @@ func (togo Togo) Update() {
 	if togo.Extra {
 		extra = 1
 	}
-	if _, err := db.Exec("UPDATE togos SET description=$1, weight=$2, extra=$3, progress=$4, date=$5, duration=$6 WHERE id=$7",
+	if _, err := db.Exec("UPDATE togos SET description=$1, weight=$2, extra=$3, progress=$4, date=$5, duration=$6 WHERE id=$7", // TODO: check ownerId? (no need)
 		togo.Description, togo.Weight, extra, togo.Progress,
 		togo.Date.Time, togo.Duration.Minutes(), togo.Id); err != nil {
 		panic(err)
@@ -221,7 +222,7 @@ func (togos TogoList) ProgressMade() (progress float64, completedInPercent float
 
 // TogoList end
 
-func Load(just_today bool) (togos TogoList, err error) {
+func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 
 	togos = make(TogoList, 0)
 	err = nil
@@ -229,15 +230,15 @@ func Load(just_today bool) (togos TogoList, err error) {
 		defer db.Close()
 		// ***** BETTER ALGORITHM
 		// FIRST GET THE COUNT OF ROWS, then create a slice of that size and then load into that.
-		const SELECT_QUERY string = "SELECT * FROM togos"
-		/* if just_today {
+		const SELECT_QUERY string = "SELECT * FROM togos WHERE owner_id=$1"
+		/* if justToday {
 			today := Date{time.Now()}
 			next := Date{today.AddDate(0, 0, 1)}
 			fmt.Println(next.Short())
 			SELECT_QUERY = fmt.Sprintf("%s WHERE date >= DATETIME(%s)", SELECT_QUERY, today.Short())//, next.Short())
 			fmt.Println(SELECT_QUERY)
 		}*/
-		rows, e := db.Query(SELECT_QUERY)
+		rows, e := db.Query(SELECT_QUERY, ownerId)
 		if e != nil {
 			err = e
 			return
@@ -248,7 +249,7 @@ func Load(just_today bool) (togos TogoList, err error) {
 			var togo Togo
 			var date time.Time
 
-			err = rows.Scan(&togo.Id, &togo.Title, &togo.Description, &togo.Weight, &togo.Extra, &togo.Progress, &date, &togo.Duration)
+			err = rows.Scan(&togo.Id, &togo.Title, &togo.Description, &togo.Weight, &togo.Extra, &togo.Progress, &date, &togo.Duration, &togo.OwnerId)
 			if lastUsedId < togo.Id {
 				lastUsedId = togo.Id
 			}
@@ -262,7 +263,7 @@ func Load(just_today bool) (togos TogoList, err error) {
 					togo.Schedule()
 				}
 				togos = togos.Add(&togo)
-			} else if !just_today {
+			} else if !justToday {
 				togos = togos.Add(&togo)
 			}
 		}
