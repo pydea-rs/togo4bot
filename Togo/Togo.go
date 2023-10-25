@@ -61,7 +61,7 @@ func (togo Togo) Save() uint64 {
 	if togo.Extra {
 		extra = 1
 	}
-	if res, err := db.Exec("INSERT INTO togos (title, description, weight, extra, progress, date, duration, owner_id) VALUES ($1, $2::varchar, $3::varchar, $4, $5, $6, $7, $8)",
+	if res, err := db.Exec("INSERT INTO togos (owner_id, title, description, weight, extra, progress, date, duration) VALUES ($1, $2::varchar, $3::varchar, $4, $5, $6, $7, $8)",
 		togo.OwnerId, togo.Title, togo.Description, togo.Weight, extra, togo.Progress,
 		togo.Date.Time, togo.Duration.Minutes()); err != nil {
 		panic(err)
