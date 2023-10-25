@@ -15,7 +15,7 @@ var lastUsedId uint64 = 0
 
 // var taskScheduler chrono.TaskScheduler = chrono.NewDefaultTaskScheduler()
 
-timeZone, _ := time.LoadLocation("Asia/Tehran")
+var timeZone, _ = time.LoadLocation("Asia/Tehran")
 
 type Date struct{ time.Time }
 
