@@ -14,11 +14,23 @@ import (
 )
 
 type Response struct {
-	Msg    string `json:"text"`
-	ChatID int64  `json:"chat_id"`
-	Method string `json:"method"`
+	Msg         string      `json:"text"`
+	ChatID      int64       `json:"chat_id"`
+	Method      string      `json:"method"`
+	ReplyMarkup ReplyMarkup `json:"reply_markup"`
 }
 
+type ReplyMarkup struct {
+	ResizeKeyboard bool       `json:"resize_keyboard"`
+	OneTime        bool       `json:"one_time_keyboard"`
+	Keyboard       [][]string `json:"keyboard"`
+}
+
+func MainKeyboard() ReplyMarkup {
+	return ReplyMarkup{ResizeKeyboard: true,
+		OneTime:  false,
+		Keyboard: [][]string{{"#", "%%"}, {"#   -a", "%   -a"}}}
+}
 
 func autoLoad(chatId int64, togos *Togo.TogoList) {
 	tg, err := Togo.Load(chatId, true) // load today's togos,  make(Togo.TogoList, 0)
@@ -35,8 +47,9 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 
 func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
 	data := Response{Msg: text,
-		Method: "sendMessage",
-		ChatID: chatID}
+		Method:      "sendMessage",
+		ReplyMarkup: MainKeyboard(),
+		ChatID:      chatID}
 	msg, _ := json.Marshal(data)
 	log.Printf("Response %s", string(msg))
 	//	fmt.Fprintf(*res,string(msg))
@@ -66,7 +79,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		}()
 
 		autoLoad(update.Message.Chat.ID, &togos)
-		
+
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
@@ -86,7 +99,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 							togo.Schedule()
 						}
 					}
-					
+
 					response = fmt.Sprint(now.Get(), ": DONE!")
 				} else {
 					response = "You must provide some values!!"
