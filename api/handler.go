@@ -65,7 +65,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		}()
 
 		autoLoad(update.Message.Chat.ID, &togos)
-
+		
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
@@ -85,8 +85,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 							togo.Schedule()
 						}
 					}
-
-					response = fmt.Sprint(now.Get(), ": Done!")
+					response = now.Get()
 				} else {
 					response = "You must provide some values!"
 				}
