@@ -85,7 +85,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 							togo.Schedule()
 						}
 					}
-					response = now.Get()
+					
+					response = "Done!"
 				} else {
 					response = "You must provide some values!!"
 				}
