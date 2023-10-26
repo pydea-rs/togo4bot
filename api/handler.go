@@ -18,7 +18,7 @@ type Response struct {
 	ChatID           int64       `json:"chat_id"`
 	Method           string      `json:"method"`
 	ReplyMarkup      ReplyMarkup `json:"reply_markup"`
-	ReplyToMessageID int64       `json:"reply_to_message_id"`
+	ReplyToMessageID int         `json:"reply_to_message_id"`
 }
 
 type ReplyMarkup struct {
@@ -46,7 +46,7 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	*/
 }
 
-func SendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int64) {
+func SendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int) {
 	data := Response{Msg: text,
 		Method:           "sendMessage",
 		ReplyMarkup:      MainKeyboard(),
