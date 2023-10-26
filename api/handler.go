@@ -1,4 +1,4 @@
-qpackage handler
+package handler
 
 import (
 	"encoding/json"

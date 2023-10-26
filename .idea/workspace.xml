@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="72bbf58e-69b5-4e88-baf2-2d90ef3064dc" name="Default Changelist" comment="" />
+    <list default="true" id="72bbf58e-69b5-4e88-baf2-2d90ef3064dc" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,12 +25,16 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="configurable.Global.GOPATH.is.expanded" value="true" />
+    <property name="configurable.Module.GOPATH.is.expanded" value="false" />
+    <property name="configurable.Project.GOPATH.is.expanded" value="true" />
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.goide.configuration.GoLibrariesConfigurableProvider" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -51,13 +57,17 @@
     <option name="version" value="3" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="752" y="446" key="#GOROOT" timestamp="1698306664774">
+    <state x="752" y="446" key="#GOROOT" timestamp="1698308788173">
       <screen x="0" y="0" width="1920" height="1032" />
     </state>
-    <state x="752" y="446" key="#GOROOT/0.0.1920.1032@0.0.1920.1032" timestamp="1698306664774" />
-    <state x="740" y="270" key="FileChooserDialogImpl" timestamp="1698306663417">
+    <state x="752" y="446" key="#GOROOT/0.0.1920.1032@0.0.1920.1032" timestamp="1698308788173" />
+    <state x="740" y="270" key="FileChooserDialogImpl" timestamp="1698308753153">
       <screen x="0" y="0" width="1920" height="1032" />
     </state>
-    <state x="740" y="270" key="FileChooserDialogImpl/0.0.1920.1032@0.0.1920.1032" timestamp="1698306663417" />
+    <state x="740" y="270" key="FileChooserDialogImpl/0.0.1920.1032@0.0.1920.1032" timestamp="1698308753153" />
+    <state x="461" y="160" key="SettingsEditor" timestamp="1698308759348">
+      <screen x="0" y="0" width="1920" height="1032" />
+    </state>
+    <state x="461" y="160" key="SettingsEditor/0.0.1920.1032@0.0.1920.1032" timestamp="1698308759348" />
   </component>
 </project>
