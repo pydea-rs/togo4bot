@@ -153,8 +153,25 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				}
 			case "$":
 				// set or update a togo
-				// only for today togos
-				response = togos.Update(update.Message.Chat.ID, terms[i+1:])
+				if i+1 < numOfTerms {
+					if terms[i+1] == "-a" {
+						if i+2 < numOfTerms {
+							allTogos, err := Togo.Load(update.Message.Chat.ID, false)
+							if err != nil {
+								panic(err)
+							}
+							response = allTogos.Update(update.Message.Chat.ID, terms[i+2:])
+						} else {
+							response = "Insufficient number of parameters!"
+
+						}
+					} else {
+						response = togos.Update(update.Message.Chat.ID, terms[i+1:])
+
+					}
+				} else {
+					response = "Insufficient number of parameters!"
+				}
 			case "/now":
 				response = now.Get()
 
