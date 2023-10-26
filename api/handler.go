@@ -19,6 +19,7 @@ type Response struct {
 	Method string `json:"method"`
 }
 
+
 func autoLoad(chatId int64, togos *Togo.TogoList) {
 	tg, err := Togo.Load(chatId, true) // load today's togos,  make(Togo.TogoList, 0)
 	if err != nil {
