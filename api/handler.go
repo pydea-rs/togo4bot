@@ -87,7 +87,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					}
 					response = now.Get()
 				} else {
-					response = "You must provide some values!"
+					response = "You must provide some values!!"
 				}
 			case "#":
 				var result []string
