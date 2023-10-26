@@ -1,4 +1,4 @@
-package handler
+qpackage handler
 
 import (
 	"encoding/json"
@@ -86,7 +86,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 						}
 					}
 
-					response = "Done!"
+					response = fmt.Sprint(now.Get(), ": Done!")
 				} else {
 					response = "You must provide some values!"
 				}
