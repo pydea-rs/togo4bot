@@ -14,10 +14,11 @@ import (
 )
 
 type Response struct {
-	Msg         string      `json:"text"`
-	ChatID      int64       `json:"chat_id"`
-	Method      string      `json:"method"`
-	ReplyMarkup ReplyMarkup `json:"reply_markup"`
+	Msg              string      `json:"text"`
+	ChatID           int64       `json:"chat_id"`
+	Method           string      `json:"method"`
+	ReplyMarkup      ReplyMarkup `json:"reply_markup"`
+	ReplyToMessageID int64       `json:"reply_to_message_id"`
 }
 
 type ReplyMarkup struct {
@@ -29,7 +30,7 @@ type ReplyMarkup struct {
 func MainKeyboard() ReplyMarkup {
 	return ReplyMarkup{ResizeKeyboard: true,
 		OneTime:  false,
-		Keyboard: [][]string{{"#", "%%"}, {"#   -a", "%   -a"}}}
+		Keyboard: [][]string{{"#", "%"}, {"#   -a", "%   -a"}}}
 }
 
 func autoLoad(chatId int64, togos *Togo.TogoList) {
@@ -45,11 +46,13 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	*/
 }
 
-func SendMessage(res *http.ResponseWriter, chatID int64, text string) {
+func SendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int64) {
 	data := Response{Msg: text,
-		Method:      "sendMessage",
-		ReplyMarkup: MainKeyboard(),
-		ChatID:      chatID}
+		Method:           "sendMessage",
+		ReplyMarkup:      MainKeyboard(),
+		ChatID:           chatID,
+		ReplyToMessageID: messageID}
+
 	msg, _ := json.Marshal(data)
 	log.Printf("Response %s", string(msg))
 	//	fmt.Fprintf(*res,string(msg))
@@ -74,7 +77,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				SendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err))
+				SendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err), update.Message.MessageID)
 			}
 		}()
 
@@ -159,7 +162,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 		}
 
-		SendMessage(&res, update.Message.Chat.ID, response)
+		SendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
 	}
 
 }
