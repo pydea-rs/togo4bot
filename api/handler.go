@@ -87,7 +87,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 						}
 					}
 					
-					response = now.Get()
+					response = fmt.Sprint(now.Get(), ": DONE!")
 				} else {
 					response = "You must provide some values!!"
 				}
