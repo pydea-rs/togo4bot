@@ -60,10 +60,10 @@ type CallbackData struct {
 
 
 func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
-	const count = len(togos)
 	var (
-		col := 0
-		row := 0
+		count = len(togos)
+		col = 0
+		row = 0
 		rowsCount = int(count / MaximumNumberOfRowItems)
 	) // calculate the number of rows needed
 	if count % MaximumNumberOfRowItems != 0 {
