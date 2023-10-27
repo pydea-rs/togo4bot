@@ -53,9 +53,9 @@ const (
 )
 
 type CallbackData struct {
-	Action UserAction
-	Id int64
-	Data interface{} `json:",omitempty"`
+	Action UserAction `json:"A"`
+	Id int64	`json:"ID"`
+	Data interface{} `json:"D,omitempty"`
 }
 
 
