@@ -55,18 +55,31 @@ const (
 type CallbackData struct {
 	Action UserAction
 	Id int64
-	Data interface{}
+	Data interface{} `json:",omitempty"`
 }
 
 
 func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
-	col := 0
-	row := 0
-	menu.InlineKeyboard = make([][]InlineKeyboardMenuItem, int(len(togos) / 3) + 1)
+	const count = len(togos)
+	var (
+		col := 0
+		row := 0
+		rowsCount = int(count / MaximumNumberOfRowItems)
+	) // calculate the number of rows needed
+	if count % MaximumNumberOfRowItems != 0 {
+		rowsCount++
+	}
+
+	menu.InlineKeyboard = make([][]InlineKeyboardMenuItem, rowsCount)
 
 	for _, togo := range togos {
 		if col == 0 {
-			menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, MaximumNumberOfRowItems)
+			// calculting the number of column needed in each row
+			if row < rowsCount - 1 {
+				menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, MaximumNumberOfRowItems)
+			} else {
+				menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, count - row * MaximumNumberOfRowItems)
+			}
 			row++
 		}
 		var togoTitle string = togo.Title
