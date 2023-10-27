@@ -58,7 +58,7 @@ type CallbackData struct {
 	Data interface{}
 }
 
-func InlineKeyboardMenu(togos Togo.TogoList) (menu ReplyMarkup, action UserAction) {
+func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
 	col := 0
 	row := 0
 	menu.InlineKeyboard = make([][]InlineKeyboardMenuItem, int(len(togos) / 3) + 1)
