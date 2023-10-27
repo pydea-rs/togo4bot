@@ -39,7 +39,7 @@ type ReplyMarkup struct {
 
 type InlineKeyboardMenuItem struct {
 	Text string `json:"text"`
-	CallbackData string `json:"callback_data,omitempty"`// CallbackData `json:"callback_data,omitempty"`
+	CallbackData CallbackData `json:"callback_data,omitempty"`
 	URL string `json:"url,omitempty"`
 }
 
@@ -87,7 +87,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row - 1][col] = InlineKeyboardMenuItem{Text: togoTitle,
-			CallbackData: "test"}//CallbackData{Action: action, Id: int64(togo.Id)}}
+			CallbackData: CallbackData{Action: 1, Id: 1}}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
 	return
