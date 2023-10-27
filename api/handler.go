@@ -60,7 +60,7 @@ type CallbackData struct {
 
 func (this CallbackData) Json () string {
 	if res, err := json.Marshal(this); err == nil {
-		return res
+		return string(res)
 	} else {
 		return fmt.Sprint(err)
 	}
