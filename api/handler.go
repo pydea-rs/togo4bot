@@ -58,6 +58,7 @@ type CallbackData struct {
 	Data interface{}
 }
 
+
 func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
 	col := 0
 	row := 0
