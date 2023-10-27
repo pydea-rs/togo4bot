@@ -267,8 +267,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		menu.HttpSendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
 	} else if update.CallbackQuery != nil {
 		data := update.CallbackQuery.Data
-		response = data
-		log.Println("[%s", data)
+		response = data.Id
+
 		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.Message.MessageID)
 
 	}
