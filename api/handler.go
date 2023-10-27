@@ -53,8 +53,8 @@ const (
 )
 
 type CallbackData struct {
-	Action UserAction `json:"A"`
-	Id int64	`json:"ID"`
+	Action UserAction `json:"A,omitempty"`
+	Id int64	`json:"ID,omitempty"`
 	Data interface{} `json:"D,omitempty"`
 }
 
@@ -87,7 +87,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row - 1][col] = InlineKeyboardMenuItem{Text: togoTitle,
-			CallbackData: CallbackData{ Id: 1}}
+			CallbackData: CallbackData{ Id: int64(togo.Id)}}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
 	return
