@@ -235,6 +235,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					response = "Insufficient number of parameters!"
 				}
 			case "✅":
+				response = "Here is your togos for today:"
 				menu = InlineKeyboardMenu(togos, TickTogo)
 			case "/now":
 				response = now.Get()
