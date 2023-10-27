@@ -160,7 +160,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 	//if update.Message.IsCommand() {
 	var response string = "What?"
-	log.Println("[%s] %s", update)
+	log.Println("[%s] %s", CallbackQuery)
 	if update.Message != nil { // If we got a message
 		var menu = MainKeyboardMenu()  // default keyboard
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
