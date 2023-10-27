@@ -59,7 +59,10 @@ type CallbackData struct {
 }
 
 func (this CallbackData) Json () string {
-	return json.Marshal(this)
+	if res, err := json.Marshal(this); err == nil {
+		return res
+	}
+	return fmt.Sprint(err)
 }
 
 func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
