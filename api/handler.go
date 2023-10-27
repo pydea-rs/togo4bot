@@ -31,16 +31,16 @@ type Response struct {
 }
 
 type ReplyMarkup struct {
-	ResizeKeyboard bool       `json:"resize_keyboard"`
-	OneTime        bool       `json:"one_time_keyboard"`
-	Keyboard       [][]string `json:"keyboard"`
-	InlineKeyboard [][]InlineKeyboardMenuItem `json:"inline_keyboard"`
+	ResizeKeyboard bool       `json:"resize_keyboard,omitempty"`
+	OneTime        bool       `json:"one_time_keyboard,omitempty"`
+	Keyboard       [][]string `json:"keyboard,omitempty"`
+	InlineKeyboard [][]InlineKeyboardMenuItem `json:"inline_keyboard,omitempty"`
 }
 
 type InlineKeyboardMenuItem struct {
 	Text string `json:"text"`
-	CallbackData CallbackData `json:"callback_data"`
-	URL string `json:"url"`
+	CallbackData CallbackData `json:"callback_data,omitempty"`
+	URL string `json:"url,omitempty"`
 }
 
 type UserAction uint8
