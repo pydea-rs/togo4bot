@@ -140,11 +140,12 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 	//if update.Message.IsCommand() {
 	if update.Message != nil { // If we got a message
+		var menu = MainKeyboardMenu()  // default keyboard
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		defer func() {
 			err := recover()
 			if err != nil {
-				HttpSendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err), update.Message.MessageID)
+				menu.HttpSendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err), update.Message.MessageID)
 			}
 		}()
 
@@ -156,7 +157,6 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		numOfTerms := len(terms)
 		var response string = "What?"
 		var now Togo.Date = Togo.Today()
-		var menu = MainKeyboardMenu()
 		for i := 0; i < numOfTerms; i++ {
 			switch terms[i] {
 			case "+":
