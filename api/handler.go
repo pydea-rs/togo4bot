@@ -74,7 +74,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row - 1][col] = InlineKeyboardMenuItem{Text: togoTitle,
-			CallbackData: CallbackData{Action: action, Id: togo.Id}}
+			CallbackData: CallbackData{Action: action, Id: int64(togo.Id)}}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
 	return
