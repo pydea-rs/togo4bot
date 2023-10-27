@@ -160,7 +160,6 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 	//if update.Message.IsCommand() {
 	var response string = "What?"
-	log.Println("[%s] %s", CallbackQuery)
 	if update.Message != nil { // If we got a message
 		var menu = MainKeyboardMenu()  // default keyboard
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
@@ -269,6 +268,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	} else if update.CallbackQuery != nil {
 		data := update.CallbackQuery.Data
 		response = data
+		log.Println("[%s] %s", data)
 		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.Message.MessageID)
 
 	}
