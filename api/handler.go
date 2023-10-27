@@ -13,6 +13,15 @@ import (
 	Togo "github.com/pya-h/togo4bot/Togo"
 )
 
+type KeyboardMenu interface {
+	HttpSendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int)
+}
+
+const (
+	MaximumInlineButtonTextLength uint8 = 16
+	MaximumNumberOfRowItems             = 3
+)
+
 type Response struct {
 	Msg              string      `json:"text"`
 	ChatID           int64       `json:"chat_id"`
@@ -25,12 +34,55 @@ type ReplyMarkup struct {
 	ResizeKeyboard bool       `json:"resize_keyboard"`
 	OneTime        bool       `json:"one_time_keyboard"`
 	Keyboard       [][]string `json:"keyboard"`
+	InlineKeyboard [][]InlineKeyboardMenuItem `json:"inline_keyboard"`
 }
 
-func MainKeyboard() ReplyMarkup {
+type InlineKeyboardMenuItem struct {
+	Text string `json:"text"`
+	CallbackData CallbackData `json:"callback_data"`
+	URL string `json:"url"`
+}
+
+type UserAction uint8
+
+const (
+	TickTogo UserAction = iota
+	UpdateTogo
+	DeleteTogo
+	// ...
+)
+
+type CallbackData struct {
+	Action UserAction
+	Id int64
+	Data interface{}
+}
+
+func InlineKeyboardMenu(togos Togo.TogoList) (menu ReplyMarkup, action UserAction) {
+	col := 0
+	row := 0
+	menu.InlineKeyboard = make([][]InlineKeyboardMenuItem, int(len(togos) / 3) + 1)
+
+	for _, togo := range togos {
+		if col == 0 {
+			menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, MaximumNumberOfRowItems)
+			row++
+		}
+		var togoTitle string = togo.Title
+		if len(togoTitle) >= int(MaximumInlineButtonTextLength) {
+			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
+		}
+		menu.InlineKeyboard[row - 1][col] = InlineKeyboardMenuItem{Text: togoTitle,
+			CallbackData: CallbackData{Action: action, Id: togo.Id}}
+		col = (col + 1) % MaximumNumberOfRowItems
+	}
+	return
+}
+
+func MainKeyboardMenu() ReplyMarkup {
 	return ReplyMarkup{ResizeKeyboard: true,
 		OneTime:  false,
-		Keyboard: [][]string{{"#", "%"}, {"#   -a", "%   -a"}}}
+		Keyboard: [][]string{{"#", "%"}, {"#   -a", "%   -a"}, {"✅"}}}
 }
 
 func autoLoad(chatId int64, togos *Togo.TogoList) {
@@ -39,6 +91,7 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 		fmt.Println("Loading failed: ", err)
 	}
 	*togos = tg
+
 	/*
 		today := time.Now()
 		// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
@@ -46,10 +99,10 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	*/
 }
 
-func SendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int) {
+func (replyMarkup ReplyMarkup) HttpSendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int) {
 	data := Response{Msg: text,
 		Method:           "sendMessage",
-		ReplyMarkup:      MainKeyboard(),
+		ReplyMarkup:      replyMarkup,
 		ChatID:           chatID,
 		ReplyToMessageID: messageID}
 
@@ -57,6 +110,19 @@ func SendMessage(res *http.ResponseWriter, chatID int64, text string, messageID 
 	log.Printf("Response %s", string(msg))
 	//	fmt.Fprintf(*res,string(msg))
 	(*res).Write(msg)
+}
+
+func GetBotFunction(update *tgbotapi.Update) func(data string) string {
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
+	return func(data string) string {
+		if err == nil {
+			msg := tgbotapi.NewMessage((*update).Message.Chat.ID, data)
+			// msg.ReplyToMessageID = update.Message.MessageID
+			bot.Send(msg)
+			return "✅!"
+		}
+		return fmt.Sprintln("Fuck: ", err)
+	}
 }
 
 func Handler(res http.ResponseWriter, r *http.Request) {
@@ -77,7 +143,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
 			if err != nil {
-				SendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err), update.Message.MessageID)
+				HttpSendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err), update.Message.MessageID)
 			}
 		}()
 
@@ -89,6 +155,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		numOfTerms := len(terms)
 		var response string = "What?"
 		var now Togo.Date = Togo.Today()
+		var menu = MainKeyboardMenu()
 		for i := 0; i < numOfTerms; i++ {
 			switch terms[i] {
 			case "+":
@@ -118,22 +185,16 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					result = togos.ToString()
 				}
-				bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
-				if err == nil {
-					if len(result) > 0 {
-
-						for _, tg := range result {
-							msg := tgbotapi.NewMessage(update.Message.Chat.ID, tg)
-							// msg.ReplyToMessageID = update.Message.MessageID
-							bot.Send(msg)
-						}
-					} else {
-						response = "Nothing!"
+				sendMessage := GetBotFunction(&update)
+				if len(result) > 0 {
+					for _, tg := range result {
+						sendMessage(tg)
 					}
-					return
+					response = "✅!"
 				} else {
-					response = fmt.Sprint(err) // "I can't send you the details!"
+					response = "Nothing!"
 				}
+
 			case "%":
 				var target *Togo.TogoList = &togos
 				scope := "Today's"
@@ -172,6 +233,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					response = "Insufficient number of parameters!"
 				}
+			case "✅":
+				menu = InlineKeyboardMenu(togos, TickTogo)
 			case "/now":
 				response = now.Get()
 
@@ -179,7 +242,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 		}
 
-		SendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
+		menu.HttpSendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
 	}
 
 }
