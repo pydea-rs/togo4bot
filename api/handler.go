@@ -159,6 +159,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	res.Header().Add("Content-Type", "application/json")
 
 	//if update.Message.IsCommand() {
+	var response string = "What?"
 	if update.Message != nil { // If we got a message
 		var menu = MainKeyboardMenu()  // default keyboard
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
@@ -175,7 +176,6 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
 		numOfTerms := len(terms)
-		var response string = "What?"
 		var now Togo.Date = Togo.Today()
 		for i := 0; i < numOfTerms; i++ {
 			switch terms[i] {
@@ -265,6 +265,11 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		}
 
 		menu.HttpSendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
+	} else if update.CallbackQuery != nil {
+		data := update.CallbackQuery.Data
+		response = data
+		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.Message.MessageID)
+
 	}
 
 }
