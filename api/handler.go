@@ -82,12 +82,12 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			}
 			row++
 		}
-		var togoTitle string = togo.Title
+		/*var togoTitle string = togo.Title
 		if len(togoTitle) >= int(MaximumInlineButtonTextLength) {
 			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
-		}
+		}*/
 		menu.InlineKeyboard[row - 1][col] = InlineKeyboardMenuItem{Text: togoTitle,
-			CallbackData: CallbackData{Action: action, Id: int64(togo.Id)}}
+			URL: "https://t.me/pya_h"}//CallbackData: CallbackData{Action: action, Id: int64(togo.Id)}}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
 	return
