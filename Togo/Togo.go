@@ -236,6 +236,7 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 		panic(err)
 	}
 	targetIdx := -1
+	// TODO: use simple version of FOR
 	for index, togo := range togos {
 		if togo.Id == id {
 			targetIdx = index
@@ -255,9 +256,10 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 }
 
 func (togos TogoList) Get(togoID uint64) (*Togo, error) {
-	for _, togo := range togos {
+	// TODO: use simple version of FOR
+	for index, togo := range togos {
 		if togo.Id == togoID {
-			return &togo, nil
+			return &togos[index], nil
 		}
 	}
 	return nil, errors.New("Can not find this togo!")
