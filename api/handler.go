@@ -271,7 +271,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			log.Println(data)
 		}
-
+		response = fmt.Sprint(data)
 		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.Message.MessageID)
 
 	}
