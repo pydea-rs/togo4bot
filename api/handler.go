@@ -78,7 +78,7 @@ func (callbackData CallbackData) Json() string {
 	}
 }
 
-func LoadCallbackData(jsonString) (data *CallbackData) {
+func LoadCallbackData(jsonString string) (data *CallbackData) {
 	json.Unmarshal([]byte(jsonString), data)
 	return
 }
@@ -287,7 +287,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.Method = "editMessageText"
-		callbackData = *LoadCallbackData(update.CallbackQuery.Data)
+		callbackData := *LoadCallbackData(update.CallbackQuery.Data)
 		if callbackData != nil {
 			switch callbackData.Action {
 			case TickTogo:
