@@ -3,7 +3,8 @@
     With many extra features and Memory/Performance & Coding optimization.
     This bot application is running on Vercel as a Serverless Function bot.
 # Language: GO
-
+# Link
+    running on https://t.me/togo4bot
 # Notes:
 * Here command/param seperator is 3 SPACES (because telegram doesnt have a specific tab character)
 * Set these Environmental Variables for start:
@@ -30,7 +31,7 @@ POSTGRES_URL=postgres connection string
     Calculate the progress been made (by default for Today)
 => ...   %   -a [NEXT_COMMAND]
     Calculate the progress been made considering all togos on any day
-    
+
 # $: Get and Update a togo of today
 => ... $   id   [NEXT_COMMAND]
 *   this will get and show a togo (just in today)
