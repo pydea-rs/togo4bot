@@ -254,7 +254,7 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 	return togos[targetIdx].ToString()
 }
 
-func (togos TogoList) Get(chatID int64, togoID uint64) (*Togo, error) {
+func (togos TogoList) Get(togoID uint64) (*Togo, error) {
 	for _, togo := range togos {
 		if togo.Id == id {
 			return &togo, nil

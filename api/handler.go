@@ -278,7 +278,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		if update.CallbackQuery.Data != nil {
 			switch update.CallbackQuery.Data.Action {
 			case TickTogo:
-				togo, err := togos.Get(response.TargetChatID, update.CallbackQuery.Data.ID)
+				togo, err := togos.Get(update.CallbackQuery.Data.ID)
 				if err != nil {
 					response.TextMsg = fmt.Sprintln(err)
 				} else {
