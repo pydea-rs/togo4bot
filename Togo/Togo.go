@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
+	"errors"
 	_ "github.com/lib/pq" // postgres
 )
 
@@ -229,6 +229,40 @@ func (togos TogoList) ProgressMade() (progress float64, completedInPercent float
 	return
 }
 
+
+func (togos TogoList) Update(chatID int64, terms []string) string {
+	var id uint64
+	if _, err := fmt.Sscan(terms[0], &id); err != nil {
+		panic(err)
+	}
+	targetIdx := -1
+	for index, togo := range togos {
+		if togo.Id == id {
+			targetIdx = index
+			break
+		}
+	}
+	if targetIdx < 0 {
+		return "There is no togo with this Id!"
+	}
+	if len(terms) > 1 && !isCommand(terms[1]) {
+
+		togos[targetIdx].setFields(terms)
+		togos[targetIdx].Update(chatID)
+	}
+
+	return togos[targetIdx].ToString()
+}
+
+func (togos TogoList) Get(chatID int64, togoID uint64) (*Togo, error) {
+	for _, togo := range togos {
+		if togo.Id == id {
+			return &togo, nil
+		}
+	}
+	return nil, errors.New("Can not find this togo!")
+}
+
 // TogoList end
 
 func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
@@ -285,30 +319,6 @@ func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 		err = e
 	}
 	return
-}
-
-func (togos TogoList) Update(chatID int64, terms []string) string {
-	var id uint64
-	if _, err := fmt.Sscan(terms[0], &id); err != nil {
-		panic(err)
-	}
-	targetIdx := -1
-	for index, togo := range togos {
-		if togo.Id == id {
-			targetIdx = index
-			break
-		}
-	}
-	if targetIdx < 0 {
-		return "There is no togo with this Id!"
-	}
-	if len(terms) > 1 && !isCommand(terms[1]) {
-
-		togos[targetIdx].setFields(terms)
-		togos[targetIdx].Update(chatID)
-	}
-
-	return togos[targetIdx].ToString()
 }
 
 func Extract(ownerId int64, terms []string) (togo Togo) {

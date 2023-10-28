@@ -48,14 +48,15 @@ type InlineKeyboardMenuItem struct {
 type UserAction uint8
 
 const (
-	TickTogo UserAction = 1
+	None UserAction = iota
+	TickTogo
 	UpdateTogo
 	DeleteTogo
 	// ...
 )
 
 type CallbackData struct {
-	Action UserAction  `json:"A,omitempty"`
+	Action UserAction  `json:"A"`
 	Id     int64       `json:"ID,omitempty"`
 	Data   interface{} `json:"D,omitempty"`
 }
@@ -272,9 +273,21 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	} else if update.CallbackQuery != nil {
 		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
-		response.TextMsg = fmt.Sprint(update.CallbackQuery.Data)
 		response.Method = "editMessageText"
 
+		if update.CallbackQuery.Data != nil {
+			switch update.CallbackQuery.Data.Action {
+			case TickTogo:
+				togo, err := togos.Get(response.TargetChatID, update.CallbackQuery.Data.ID)
+				if err != nil {
+					response.TextMsg = fmt.Sprintln(err)
+				} else {
+					(*togo).Progress = 100
+					(*togo).Update(response.TargetChatID)
+					response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
+				}
+			}
+		}
 		response.CallAPI(&res)
 
 	}
