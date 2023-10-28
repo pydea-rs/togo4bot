@@ -302,6 +302,12 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				response.TextMsg = "✅!"
 			}
 		}
+		log.Println(callbackData)
+
+		(*togo).Progress = 100
+		(*togo).Update(response.TargetChatID)
+		response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
+		response.TextMsg = "✅!"
 		response.CallAPI(&res)
 	}
 
