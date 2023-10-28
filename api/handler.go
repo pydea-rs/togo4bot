@@ -78,8 +78,8 @@ func (callbackData CallbackData) Json() string {
 	}
 }
 
-func LoadCallbackData(jsonString string) (data *CallbackData) {
-	json.Unmarshal([]byte(jsonString), data)
+func LoadCallbackData(jsonString string) (data CallbackData) {
+	json.Unmarshal([]byte(jsonString), &data)
 	return
 }
 
@@ -287,7 +287,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.Method = "editMessageText"
-		callbackData := *LoadCallbackData(update.CallbackQuery.Data)
+		callbackData := LoadCallbackData(update.CallbackQuery.Data)
 		response.TextMsg = update.CallbackQuery.Data
 		log.Println(callbackData)
 		switch callbackData.Action {
