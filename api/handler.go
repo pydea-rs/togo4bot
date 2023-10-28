@@ -69,7 +69,7 @@ func (callbackData *CallbackData) Json() string {
 	}
 }
 
-func (togos Togo.TogoList) InlineKeyboardMenu(action UserAction) (menu ReplyMarkup) {
+func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
 	var (
 		count     = len(togos)
 		col       = 0
@@ -262,7 +262,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				}
 			case "✅":
 				response.TextMsg = "Here is your togos for today:"
-				response.ReplyMarkup = togos.InlineKeyboardMenu(TickTogo)
+				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
 			case "/now":
 				response.TextMsg = now.Get()
 
@@ -284,7 +284,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					(*togo).Progress = 100
 					(*togo).Update(response.TargetChatID)
-					response.ReplyMarkup = togos.InlineKeyboardMenu(TickTogo)
+					response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
 				}
 			}
 		}
