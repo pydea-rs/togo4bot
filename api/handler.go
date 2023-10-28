@@ -267,7 +267,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		menu.HttpSendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
 	} else if update.CallbackQuery != nil {
 		var data CallbackData
-		err := json.Unmarshal(update.CallbackQuery.Data, &data)
+		err := json.Unmarshal([]byte(update.CallbackQuery.Data), &data)
 		if err == nil {
 			log.Println(data)
 		}
