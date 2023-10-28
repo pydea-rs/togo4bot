@@ -272,7 +272,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			log.Println(data)
 		}
 		response = fmt.Sprint(data)
-		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.Message.MessageID)
+		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.CallbackQuery.Message.MessageID)
 
 	}
 
