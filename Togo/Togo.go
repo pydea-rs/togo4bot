@@ -15,6 +15,7 @@ var lastUsedId uint64 = 0
 
 // var taskScheduler chrono.TaskScheduler = chrono.NewDefaultTaskScheduler()
 
+// ---------------------- Date/Time Struct & Date Receivers --------------------------------
 type Date struct{ time.Time }
 
 func (d *Date) Get() string {
@@ -37,7 +38,7 @@ func Today() Date {
 	return Date{Now()}
 }
 
-// Struct Togo start
+// ---------------------- Togo Struct & Togo Receivers--------------------------------
 type Togo struct {
 	Id          uint64
 	Title       string
@@ -190,15 +191,14 @@ func (togo *Togo) ToString() string {
 		togo.Id, togo.Title, togo.Description, togo.Weight, togo.Extra, togo.Progress, togo.Date.Get(), togo.Duration.Minutes())
 }
 
-// Struct Togo end
 
-// TogoList start
+// ---------------------- TogoList Type & Togo Receivers--------------------------------
 type TogoList []Togo
 
 func (togos TogoList) ToString() (result []string) {
 	//result = "- - - - - - - - - - - - - - - - - - - - - -"
-	for _, el := range togos {
-		result = append(result, el.ToString())
+	for i := range togos {
+		result = append(result, togos[i].ToString())
 	}
 	return
 }
@@ -209,14 +209,14 @@ func (togos TogoList) Add(newTogo *Togo) TogoList {
 
 func (togos TogoList) ProgressMade() (progress float64, completedInPercent float64, completed uint64, extra uint64, total uint64) {
 	totalInPercent := uint64(0)
-	for _, togo := range togos {
-		progress += float64(togo.Progress) * float64(togo.Weight)
-		if togo.Progress == 100 {
+	for i := range togos {
+		progress += float64(togos[i].Progress) * float64(togos[i].Weight)
+		if togos[i].Progress == 100 {
 			completed++
-			completedInPercent += float64(togo.Progress) * float64(togo.Weight)
+			completedInPercent += float64(togos[i].Progress) * float64(togos[i].Weight)
 		}
-		if !togo.Extra {
-			totalInPercent += uint64(100 * togo.Weight)
+		if !togos[i].Extra {
+			totalInPercent += uint64(100 * togos[i].Weight)
 			total++
 		} else {
 			extra++
@@ -237,9 +237,9 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 	}
 	targetIdx := -1
 	// TODO: use simple version of FOR
-	for index, togo := range togos {
-		if togo.Id == id {
-			targetIdx = index
+	for i := range togos {
+		if togos[i].Id == id {
+			targetIdx = i
 			break
 		}
 	}
@@ -257,16 +257,16 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 
 func (togos TogoList) Get(togoID uint64) (*Togo, error) {
 	// TODO: use simple version of FOR
-	for index, togo := range togos {
-		if togo.Id == togoID {
-			return &togos[index], nil
+	for i := range togos {
+		if togos[i].Id == togoID {
+			return &togos[i], nil
 		}
 	}
 	return nil, errors.New("Can not find this togo!")
 }
 
-// TogoList end
 
+// ---------------------- Shared Functions --------------------------------
 func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 
 	togos = make(TogoList, 0)

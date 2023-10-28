@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	MaximumInlineButtonTextLength uint8 = 16
-	MaximumNumberOfRowItems             = 3
+	MaximumInlineButtonTextLength = 24
+	MaximumNumberOfRowItems       = 3
 )
 
 // ---------------------- Telegram Response Struct & Interfaces --------------------------------
@@ -97,7 +97,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 
 	menu.InlineKeyboard = make([][]InlineKeyboardMenuItem, rowsCount)
 
-	for _, togo := range togos {
+	for i := range togos {
 		if col == 0 {
 			// calculting the number of column needed in each row
 			if row < rowsCount-1 {
@@ -107,17 +107,16 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			}
 			row++
 		}
-		var togoTitle string = togo.Title
-		if len(togoTitle) >= int(MaximumInlineButtonTextLength) {
-			status := ""
-			if togo.Progress >= 100 {
-				status = "✅ "
-			}
-			log.Println("Togo progress check: ", togo.Progress, status)
-			togoTitle = fmt.Sprint(status, togoTitle[:MaximumInlineButtonTextLength], "...")
+		status := ""
+		if togos[i].Progress >= 100 {
+			status = "✅ "
+		}
+		var togoTitle string = fmt.Sprint(status, togos[i].Title)
+		if len(togoTitle) >= MaximumInlineButtonTextLength {
+			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row-1][col] = InlineKeyboardMenuItem{Text: togoTitle,
-			CallbackData: (CallbackData{Action: action, ID: int64(togo.Id)}).Json()}
+			CallbackData: (CallbackData{Action: action, ID: int64(togos[i].Id)}).Json()}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
 	return
@@ -187,11 +186,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.ReplyMarkup = MainKeyboardMenu() // default keyboard
 		response.TargetChatID = update.Message.Chat.ID
 		response.MessageRepliedTo = update.Message.MessageID
-
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
+		// log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		LoadForToday(update.Message.Chat.ID, &togos)
-
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
 		numOfTerms := len(terms)
@@ -209,26 +205,25 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 							togo.Schedule()
 						}
 					}
-
 					response.TextMsg = fmt.Sprint(now.Get(), ": DONE!")
 				} else {
 					response.TextMsg = "You must provide some values!!"
 				}
 			case "#":
-				var result []string
+				var results []string
 				if i+1 < numOfTerms && terms[i+1] == "-a" {
 					allTogos, err := Togo.Load(update.Message.Chat.ID, false)
 					if err != nil {
 						panic(err)
 					}
-					result = allTogos.ToString()
+					results = allTogos.ToString()
 				} else {
-					result = togos.ToString()
+					results = togos.ToString()
 				}
 				sendMessage := GetTgBotApiFunction(&update)
-				if len(result) > 0 {
-					for _, tg := range result {
-						sendMessage(tg)
+				if len(results) > 0 {
+					for i := range results {
+						sendMessage(results[i])
 					}
 					response.TextMsg = "✅!"
 				} else {
@@ -302,7 +297,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				(*togo).Progress = 100
 				(*togo).Update(response.TargetChatID)
 				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
-				response.TextMsg = "✅!"
+				response.TextMsg = "✅! Now select the next togo you want to tick ..."
 			}
 		}
 		response.CallAPI(&res)
