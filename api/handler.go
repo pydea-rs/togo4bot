@@ -14,7 +14,7 @@ import (
 )
 
 type KeyboardMenu interface {
-	HttpSendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int)
+	CallAPI(res *http.ResponseWriter, chatID int64, text string, messageID int)
 }
 
 const (
@@ -22,25 +22,27 @@ const (
 	MaximumNumberOfRowItems             = 3
 )
 
-type Response struct {
-	Msg              string      `json:"text"`
-	ChatID           int64       `json:"chat_id"`
-	Method           string      `json:"method"`
-	ReplyMarkup      ReplyMarkup `json:"reply_markup"`
-	ReplyToMessageID int         `json:"reply_to_message_id"`
+type TelegramResponse struct {
+	TextMsg            string      `json:"text,omitempty"`
+	TargetChatID       int64       `json:"chat_id"`
+	Method             string      `json:"method"`
+	ReplyMarkup        ReplyMarkup `json:"reply_markup,omitempty"`
+	MessageRepliedTo   int         `json:"reply_to_message_id,omitempty"`
+	MessageBeingEdited int         `json:"message_id,omitempty"` // for edit message & etc
+	// file/photo?
 }
 
 type ReplyMarkup struct {
-	ResizeKeyboard bool       `json:"resize_keyboard,omitempty"`
-	OneTime        bool       `json:"one_time_keyboard,omitempty"`
-	Keyboard       [][]string `json:"keyboard,omitempty"`
+	ResizeKeyboard bool                       `json:"resize_keyboard,omitempty"`
+	OneTime        bool                       `json:"one_time_keyboard,omitempty"`
+	Keyboard       [][]string                 `json:"keyboard,omitempty"`
 	InlineKeyboard [][]InlineKeyboardMenuItem `json:"inline_keyboard,omitempty"`
 }
 
 type InlineKeyboardMenuItem struct {
-	Text string `json:"text"`
+	Text         string `json:"text"`
 	CallbackData string `json:"callback_data,omitempty"`
-	URL string `json:"url,omitempty"`
+	URL          string `json:"url,omitempty"`
 }
 
 type UserAction uint8
@@ -53,12 +55,12 @@ const (
 )
 
 type CallbackData struct {
-	Action UserAction `json:"A,omitempty"`
-	Id int64	`json:"ID,omitempty"`
-	Data interface{} `json:"D,omitempty"`
+	Action UserAction  `json:"A,omitempty"`
+	Id     int64       `json:"ID,omitempty"`
+	Data   interface{} `json:"D,omitempty"`
 }
 
-func (this CallbackData) Json () string {
+func (this CallbackData) Json() string {
 	if res, err := json.Marshal(this); err == nil {
 		return string(res)
 	} else {
@@ -68,12 +70,12 @@ func (this CallbackData) Json () string {
 
 func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
 	var (
-		count = len(togos)
-		col = 0
-		row = 0
+		count     = len(togos)
+		col       = 0
+		row       = 0
 		rowsCount = int(count / MaximumNumberOfRowItems)
 	) // calculate the number of rows needed
-	if count % MaximumNumberOfRowItems != 0 {
+	if count%MaximumNumberOfRowItems != 0 {
 		rowsCount++
 	}
 
@@ -82,10 +84,10 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 	for _, togo := range togos {
 		if col == 0 {
 			// calculting the number of column needed in each row
-			if row < rowsCount - 1 {
+			if row < rowsCount-1 {
 				menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, MaximumNumberOfRowItems)
 			} else {
-				menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, count - row * MaximumNumberOfRowItems)
+				menu.InlineKeyboard[row] = make([]InlineKeyboardMenuItem, count-row*MaximumNumberOfRowItems)
 			}
 			row++
 		}
@@ -93,7 +95,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 		if len(togoTitle) >= int(MaximumInlineButtonTextLength) {
 			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
-		menu.InlineKeyboard[row - 1][col] = InlineKeyboardMenuItem{Text: togoTitle,
+		menu.InlineKeyboard[row-1][col] = InlineKeyboardMenuItem{Text: togoTitle,
 			CallbackData: (CallbackData{Action: action, Id: int64(togo.Id)}).Json()}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
@@ -120,14 +122,8 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	*/
 }
 
-func (replyMarkup ReplyMarkup) HttpSendMessage(res *http.ResponseWriter, chatID int64, text string, messageID int) {
-	data := Response{Msg: text,
-		Method:           "sendMessage",
-		ReplyMarkup:      replyMarkup,
-		ChatID:           chatID,
-		ReplyToMessageID: messageID}
-
-	msg, _ := json.Marshal(data)
+func (response TelegramResponse) CallAPI(res *http.ResponseWriter) {
+	msg, _ := json.Marshal(response)
 	log.Printf("Response %s", string(msg))
 	//	fmt.Fprintf(*res,string(msg))
 	(*res).Write(msg)
@@ -159,20 +155,25 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	res.Header().Add("Content-Type", "application/json")
 
 	//if update.Message.IsCommand() {
-	var response string = "What?"
+	response := TelegramResponse{Message: "What?",
+		Method: "sendMessage"} // default method is sendMessage
+
+	defer func() {
+		err := recover()
+		if err != nil {
+			response.CallAPI(&res)
+		}
+	}()
+
 	if update.Message != nil { // If we got a message
-		var menu = MainKeyboardMenu()  // default keyboard
+		response.ReplyMarkup = MainKeyboardMenu() // default keyboard
+		response.TargetChatID = update.Message.ChatID
+		response.MessageRepliedTo = update.Message.MessageID
+
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-		defer func() {
-			err := recover()
-			if err != nil {
-				menu.HttpSendMessage(&res, update.Message.Chat.ID, fmt.Sprint(err), update.Message.MessageID)
-			}
-		}()
 
 		autoLoad(update.Message.Chat.ID, &togos)
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
 		numOfTerms := len(terms)
@@ -191,9 +192,9 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 						}
 					}
 
-					response = fmt.Sprint(now.Get(), ": DONE!")
+					response.TextMsg = fmt.Sprint(now.Get(), ": DONE!")
 				} else {
-					response = "You must provide some values!!"
+					response.TextMsg = "You must provide some values!!"
 				}
 			case "#":
 				var result []string
@@ -211,9 +212,9 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					for _, tg := range result {
 						sendMessage(tg)
 					}
-					response = "✅!"
+					response.TextMsg = "✅!"
 				} else {
-					response = "Nothing!"
+					response.TextMsg = "Nothing!"
 				}
 
 			case "%":
@@ -228,10 +229,10 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					scope = "Total"
 				}
 				progress, completedInPercent, completed, extra, total := (*target).ProgressMade()
-				response = fmt.Sprintf("%s Progress: %3.2f%% \n%3.2f%% Completed\nStatistics: %d / %d",
+				response.TextMsg = fmt.Sprintf("%s Progress: %3.2f%% \n%3.2f%% Completed\nStatistics: %d / %d",
 					scope, progress, completedInPercent, completed, total)
 				if extra > 0 {
-					response = fmt.Sprintf("%s[+%d]\n", response, extra)
+					response.TextMsg = fmt.Sprintf("%s[+%d]\n", response.TextMsg, extra)
 				}
 			case "$":
 				// set or update a togo
@@ -242,37 +243,35 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 							if err != nil {
 								panic(err)
 							}
-							response = allTogos.Update(update.Message.Chat.ID, terms[i+2:])
+							response.TextMsg = allTogos.Update(update.Message.Chat.ID, terms[i+2:])
 						} else {
-							response = "Insufficient number of parameters!"
+							response.TextMsg = "Insufficient number of parameters!"
 
 						}
 					} else {
-						response = togos.Update(update.Message.Chat.ID, terms[i+1:])
+						response.TextMsg = togos.Update(update.Message.Chat.ID, terms[i+1:])
 
 					}
 				} else {
-					response = "Insufficient number of parameters!"
+					response.TextMsg = "Insufficient number of parameters!"
 				}
 			case "✅":
-				response = "Here is your togos for today:"
-				menu = InlineKeyboardMenu(togos, TickTogo)
+				response.TextMsg = "Here is your togos for today:"
+				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
 			case "/now":
-				response = now.Get()
+				response.TextMsg = now.Get()
 
 			}
 
 		}
-
-		menu.HttpSendMessage(&res, update.Message.Chat.ID, response, update.Message.MessageID)
+		response.CallAPI(&res)
 	} else if update.CallbackQuery != nil {
-		var data CallbackData
-		err := json.Unmarshal([]byte(update.CallbackQuery.Data), &data)
-		if err == nil {
-			log.Println(data)
-		}
-		response = fmt.Sprint(data)
-		MainKeyboardMenu().HttpSendMessage(&res, update.CallbackQuery.Message.Chat.ID, response, update.CallbackQuery.Message.MessageID)
+		response.MessageBeingEditted = update.CallbackQuery.Message.MessageID
+		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
+		response.TextMsg = fmt.Sprint(update.CallbackQuery.Data)
+		response.Method = "editMessageText"
+
+		response.CallAPI(&res)
 
 	}
 
