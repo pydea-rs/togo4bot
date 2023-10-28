@@ -266,7 +266,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		}
 		response.CallAPI(&res)
 	} else if update.CallbackQuery != nil {
-		response.MessageBeingEditted = update.CallbackQuery.Message.MessageID
+		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.TextMsg = fmt.Sprint(update.CallbackQuery.Data)
 		response.Method = "editMessageText"
