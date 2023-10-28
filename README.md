@@ -51,6 +51,7 @@ POSTGRES_URL=postgres connection string
 =>        -x: not extra (default)
 *   all params between [] are optional.
 
+
 # Remember:
 *   The flag list separator is 3 spaces. space character will be evaluated as a part of the current flag's param. do not be mistaken.
 *   in 'add new togo' syntax, all flags are optional except for the title, meaning that you can simply add new togos even with specifying the title only such as:
