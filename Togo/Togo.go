@@ -17,11 +17,11 @@ var lastUsedId uint64 = 0
 
 type Date struct{ time.Time }
 
-func (d Date) Get() string {
+func (d *Date) Get() string {
 
 	return fmt.Sprintf("%d-%d-%d\t%d:%d", d.Year(), d.Month(), d.Day(), d.Hour(), d.Minute())
 }
-func (d Date) Short() string {
+func (d *Date) Short() string {
 
 	return fmt.Sprintf("%d-%d-%d", d.Year(), d.Month(), d.Day())
 }
@@ -50,7 +50,7 @@ type Togo struct {
 	OwnerId     int64 // telegram id
 }
 
-func (togo Togo) Save() uint64 {
+func (togo *Togo) Save() uint64 {
 	/*const CREATE_TABLE_QUERY string = `CREATE TABLE IF NOT EXISTS togos (id SERIAL PRIMARY KEY, owner_id BIGINT NOT NULL,
 	title VARCHAR(64) NOT NULL, description VARCHAR(256), weight INTEGER, extra INTEGER,
 	progress INTEGER, date timestamp with time zone, duration INTEGER)`*/
@@ -78,7 +78,7 @@ func (togo Togo) Save() uint64 {
 	return 0
 }
 
-func (togo Togo) Schedule() {
+func (togo *Togo) Schedule() {
 	/*_, err := taskScheduler.Schedule(func(ctx context.Context) {
 		fmt.Println("\nYour Next Togo:\n", togo.ToString(), "\n> ")
 		fmt.Print()
@@ -97,8 +97,8 @@ func isCommand(term string) bool {
 }
 
 func (togo *Togo) setFields(terms []string) {
-	num_of_terms := len(terms)
-	for i := 1; i < num_of_terms && !isCommand(terms[i]); i++ {
+	numOfTerms := len(terms)
+	for i := 1; i < numOfTerms && !isCommand(terms[i]); i++ {
 		switch terms[i] {
 		case "=", "+w":
 			i++
@@ -167,7 +167,7 @@ func (togo *Togo) setFields(terms []string) {
 
 }
 
-func (togo Togo) Update(ownerID int64) {
+func (togo *Togo) Update(ownerID int64) {
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
 
 	if err != nil {
@@ -185,7 +185,7 @@ func (togo Togo) Update(ownerID int64) {
 	}
 }
 
-func (togo Togo) ToString() string {
+func (togo *Togo) ToString() string {
 	return fmt.Sprintf("Togo #%d) %s:\t%s\nWeight: %d\nExtra: %t\nProgress: %d\nAt: %s, about %.1f minutes",
 		togo.Id, togo.Title, togo.Description, togo.Weight, togo.Extra, togo.Progress, togo.Date.Get(), togo.Duration.Minutes())
 }
@@ -195,16 +195,16 @@ func (togo Togo) ToString() string {
 // TogoList start
 type TogoList []Togo
 
-func (these TogoList) ToString() (result []string) {
+func (togos TogoList) ToString() (result []string) {
 	//result = "- - - - - - - - - - - - - - - - - - - - - -"
-	for _, el := range these {
+	for _, el := range togos {
 		result = append(result, el.ToString())
 	}
 	return
 }
 
-func (these TogoList) Add(new_togo *Togo) TogoList {
-	return append(these, *new_togo)
+func (togos TogoList) Add(newTogo *Togo) TogoList {
+	return append(togos, *newTogo)
 }
 
 func (togos TogoList) ProgressMade() (progress float64, completedInPercent float64, completed uint64, extra uint64, total uint64) {
@@ -256,7 +256,7 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 
 func (togos TogoList) Get(togoID uint64) (*Togo, error) {
 	for _, togo := range togos {
-		if togo.Id == id {
+		if togo.Id == togoID {
 			return &togo, nil
 		}
 	}

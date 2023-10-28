@@ -61,15 +61,15 @@ type CallbackData struct {
 	Data   interface{} `json:"D,omitempty"`
 }
 
-func (this CallbackData) Json() string {
-	if res, err := json.Marshal(this); err == nil {
+func (callbackData *CallbackData) Json() string {
+	if res, err := json.Marshal(callbackData); err == nil {
 		return string(res)
 	} else {
 		return fmt.Sprint(err)
 	}
 }
 
-func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
+func (togos Togo.TogoList) InlineKeyboardMenu(action UserAction) (menu ReplyMarkup) {
 	var (
 		count     = len(togos)
 		col       = 0
@@ -127,7 +127,7 @@ func autoLoad(chatId int64, togos *Togo.TogoList) {
 	*/
 }
 
-func (response TelegramResponse) CallAPI(res *http.ResponseWriter) {
+func (response *TelegramResponse) CallAPI(res *http.ResponseWriter) {
 	msg, _ := json.Marshal(response)
 	log.Printf("Response %s", string(msg))
 	//	fmt.Fprintf(*res,string(msg))
@@ -138,7 +138,7 @@ func GetBotFunction(update *tgbotapi.Update) func(data string) string {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	return func(data string) string {
 		if err == nil {
-			msg := tgbotapi.NewMessage((*update).Message.Chat.ID, data)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, data)
 			// msg.ReplyToMessageID = update.Message.MessageID
 			bot.Send(msg)
 			return "✅!"
@@ -262,7 +262,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				}
 			case "✅":
 				response.TextMsg = "Here is your togos for today:"
-				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
+				response.ReplyMarkup = togos.InlineKeyboardMenu(TickTogo)
 			case "/now":
 				response.TextMsg = now.Get()
 
@@ -284,7 +284,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					(*togo).Progress = 100
 					(*togo).Update(response.TargetChatID)
-					response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
+					response.ReplyMarkup = togos.InlineKeyboardMenu(TickTogo)
 				}
 			}
 		}
