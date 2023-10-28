@@ -113,6 +113,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			if togo.Progress >= 100 {
 				status = "✅ "
 			}
+			log.Println("Togo progress check: ", togo.Progress, status)
 			togoTitle = fmt.Sprint(status, togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row-1][col] = InlineKeyboardMenuItem{Text: togoTitle,
