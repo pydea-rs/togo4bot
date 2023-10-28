@@ -291,7 +291,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 		switch callbackData.Action {
 		case TickTogo:
-			togo, err := togos.Get(callbackData.ID)
+			togo, err := togos.Get(uint64(callbackData.ID))
 			if err != nil {
 				response.TextMsg = fmt.Sprintln(err)
 			} else {
