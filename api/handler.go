@@ -287,6 +287,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.Method = "editMessageText"
+		LoadForToday(response.TargetChatID, &togos)
+
 		callbackData := LoadCallbackData(update.CallbackQuery.Data)
 		response.TextMsg = update.CallbackQuery.Data
 		log.Println(callbackData)
