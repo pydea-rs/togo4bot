@@ -302,7 +302,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				response.TextMsg = "✅!"
 			}
 		}
+		response.CallAPI(&res)
 	}
-	response.CallAPI(&res)
 
 }
