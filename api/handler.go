@@ -48,7 +48,7 @@ type InlineKeyboardMenuItem struct {
 type UserAction uint8
 
 const (
-	TickTogo UserAction = iota
+	TickTogo UserAction = 1
 	UpdateTogo
 	DeleteTogo
 	// ...
