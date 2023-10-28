@@ -303,6 +303,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			}
 		}
 		log.Println(callbackData)
+		togo, err := togos.Get(uint64(callbackData.ID))
 
 		(*togo).Progress = 100
 		(*togo).Update(response.TargetChatID)
