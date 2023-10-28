@@ -288,7 +288,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.Method = "editMessageText"
 		callbackData := *LoadCallbackData(update.CallbackQuery.Data)
-
+		response.TextMsg = update.CallbackQuery.Data
+		log.Println(callbackData)
 		switch callbackData.Action {
 		case TickTogo:
 			togo, err := togos.Get(uint64(callbackData.ID))
@@ -298,6 +299,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				(*togo).Progress = 100
 				(*togo).Update(response.TargetChatID)
 				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
+				response.TextMsg = "✅!"
 			}
 		}
 	}
