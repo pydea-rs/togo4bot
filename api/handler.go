@@ -13,8 +13,8 @@ import (
 	Togo "github.com/pya-h/togo4bot/Togo"
 )
 
-type KeyboardMenu interface {
-	CallAPI(res *http.ResponseWriter, chatID int64, text string, messageID int)
+type TelegramAPI interface {
+	CallAPI(res *http.ResponseWriter)
 }
 
 const (
@@ -93,7 +93,11 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 		}
 		var togoTitle string = togo.Title
 		if len(togoTitle) >= int(MaximumInlineButtonTextLength) {
-			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
+			status := ""
+			if togo.Progress >= 100 {
+				status = "✅ "
+			}
+			togoTitle = fmt.Sprint(status, togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row-1][col] = InlineKeyboardMenuItem{Text: togoTitle,
 			CallbackData: (CallbackData{Action: action, Id: int64(togo.Id)}).Json()}
@@ -155,7 +159,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	res.Header().Add("Content-Type", "application/json")
 
 	//if update.Message.IsCommand() {
-	response := TelegramResponse{Message: "What?",
+	response := TelegramResponse{TextMsg: "What?",
 		Method: "sendMessage"} // default method is sendMessage
 
 	defer func() {
@@ -167,7 +171,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 	if update.Message != nil { // If we got a message
 		response.ReplyMarkup = MainKeyboardMenu() // default keyboard
-		response.TargetChatID = update.Message.ChatID
+		response.TargetChatID = update.Message.Chat.ID
 		response.MessageRepliedTo = update.Message.MessageID
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
