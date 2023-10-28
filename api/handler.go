@@ -13,14 +13,15 @@ import (
 	Togo "github.com/pya-h/togo4bot/Togo"
 )
 
-type TelegramAPI interface {
-	CallAPI(res *http.ResponseWriter)
-}
-
 const (
 	MaximumInlineButtonTextLength uint8 = 16
 	MaximumNumberOfRowItems             = 3
 )
+
+// ---------------------- Telegram Response Struct & Interfaces --------------------------------
+type TelegramAPI interface {
+	CallAPI(res *http.ResponseWriter)
+}
 
 type TelegramResponse struct {
 	TextMsg            string      `json:"text,omitempty"`
@@ -45,6 +46,14 @@ type InlineKeyboardMenuItem struct {
 	URL          string `json:"url,omitempty"`
 }
 
+func (response *TelegramResponse) CallAPI(res *http.ResponseWriter) {
+	msg, _ := json.Marshal(response)
+	log.Printf("Response %s", string(msg))
+	//	fmt.Fprintf(*res,string(msg))
+	(*res).Write(msg)
+}
+
+// ---------------------- Callback Structs & Functions --------------------------------
 type UserAction uint8
 
 const (
@@ -61,7 +70,7 @@ type CallbackData struct {
 	Data   interface{} `json:"D,omitempty"`
 }
 
-func (callbackData *CallbackData) Json() string {
+func (callbackData CallbackData) Json() string {
 	if res, err := json.Marshal(callbackData); err == nil {
 		return string(res)
 	} else {
@@ -69,6 +78,12 @@ func (callbackData *CallbackData) Json() string {
 	}
 }
 
+func LoadCallbackData(jsonString) (data *CallbackData) {
+	json.Unmarshal([]byte(jsonString), data)
+	return
+}
+
+// ---------------------- Telegram Response Related Functions ------------------------------
 func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
 	var (
 		count     = len(togos)
@@ -113,28 +128,8 @@ func MainKeyboardMenu() ReplyMarkup {
 		Keyboard: [][]string{{"#", "%"}, {"#   -a", "%   -a"}, {"✅"}}}
 }
 
-func autoLoad(chatId int64, togos *Togo.TogoList) {
-	tg, err := Togo.Load(chatId, true) // load today's togos,  make(Togo.TogoList, 0)
-	if err != nil {
-		fmt.Println("Loading failed: ", err)
-	}
-	*togos = tg
-
-	/*
-		today := time.Now()
-		// mainTaskScheduler.Schedule(func(ctx context.Context) { autoLoad(togos) },
-		// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
-	*/
-}
-
-func (response *TelegramResponse) CallAPI(res *http.ResponseWriter) {
-	msg, _ := json.Marshal(response)
-	log.Printf("Response %s", string(msg))
-	//	fmt.Fprintf(*res,string(msg))
-	(*res).Write(msg)
-}
-
-func GetBotFunction(update *tgbotapi.Update) func(data string) string {
+// ---------------------- tgbotapi Related Functions ------------------------------
+func GetTgBotApiFunction(update *tgbotapi.Update) func(data string) string {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	return func(data string) string {
 		if err == nil {
@@ -147,6 +142,22 @@ func GetBotFunction(update *tgbotapi.Update) func(data string) string {
 	}
 }
 
+// ---------------------- Togos Related Functions ------------------------------
+func LoadForToday(chatId int64, togos *Togo.TogoList) {
+	tg, err := Togo.Load(chatId, true) // load today's togos,  make(Togo.TogoList, 0)
+	if err != nil {
+		fmt.Println("Loading failed: ", err)
+	}
+	*togos = tg
+
+	/*
+		today := time.Now()
+		// mainTaskScheduler.Schedule(func(ctx context.Context) { LoadForToday(togos) },
+		// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
+	*/
+}
+
+// ---------------------- Serverless Function ------------------------------
 func Handler(res http.ResponseWriter, r *http.Request) {
 	var togos Togo.TogoList
 
@@ -170,6 +181,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
+	// ---------------------- Handling Casual Telegram text Messages ------------------------------
 	if update.Message != nil { // If we got a message
 		response.ReplyMarkup = MainKeyboardMenu() // default keyboard
 		response.TargetChatID = update.Message.Chat.ID
@@ -177,7 +189,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-		autoLoad(update.Message.Chat.ID, &togos)
+		LoadForToday(update.Message.Chat.ID, &togos)
 
 		input := update.Message.Text[:len(update.Message.Text)]
 		terms := strings.Split(input, "   ")
@@ -212,7 +224,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					result = togos.ToString()
 				}
-				sendMessage := GetBotFunction(&update)
+				sendMessage := GetTgBotApiFunction(&update)
 				if len(result) > 0 {
 					for _, tg := range result {
 						sendMessage(tg)
@@ -270,15 +282,16 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 
 		}
 		response.CallAPI(&res)
+
 	} else if update.CallbackQuery != nil {
 		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.Method = "editMessageText"
-
-		if update.CallbackQuery.Data != nil {
-			switch update.CallbackQuery.Data.Action {
+		callbackData = *LoadCallbackData(update.CallbackQuery.Data)
+		if callbackData != nil {
+			switch callbackData.Action {
 			case TickTogo:
-				togo, err := togos.Get(update.CallbackQuery.Data.ID)
+				togo, err := togos.Get(callbackData.ID)
 				if err != nil {
 					response.TextMsg = fmt.Sprintln(err)
 				} else {
