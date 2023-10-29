@@ -157,18 +157,18 @@ func LoadForToday(chatId int64, togos *Togo.TogoList) {
 }
 func SplitArguments(statement string) []string {
 	result := make([]string, 0)
-	numOfSpace := 0
+	numOfSpaces := 0
 	segmentStartIndex := 0
 
 	for i := range statement {
 		if statement[i] == ' ' {
-			numOfSpace++
-		} else if numOfSpace > 0 {
-			if numOfSpace == 3 {
+			numOfSpaces++
+		} else if numOfSpaces > 0 {
+			if numOfSpaces == 2 {
 				result = append(result, statement[segmentStartIndex:i-3])
 				segmentStartIndex = i
 			}
-			numOfSpace = 0
+			numOfSpaces = 0
 		}
 
 	}
