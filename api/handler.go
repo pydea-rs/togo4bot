@@ -294,7 +294,11 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				response.TextMsg = fmt.Sprintln(err)
 			} else {
-				(*togo).Progress = 100
+				if (*togo).Progress < 100 {
+					(*togo).Progress = 100
+				} else {
+					(*togo).Progress = 0
+				}
 				(*togo).Update(response.TargetChatID)
 				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
 				response.TextMsg = "✅! Now select the next togo you want to tick ..."
