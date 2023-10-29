@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	Togo "github.com/pya-h/togo4bot/Togo"
@@ -156,6 +155,26 @@ func LoadForToday(chatId int64, togos *Togo.TogoList) {
 		// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
 	*/
 }
+func SplitArguments(statement string) []string {
+	result := make([]string, 0)
+	numOfSpace := 0
+	segmentStartIndex := 0
+
+	for i := range statement {
+		if statement[i] == ' ' {
+			numOfSpace++
+		} else if numOfSpace > 0 {
+			if numOfSpace == 3 {
+				result = append(result, statement[segmentStartIndex:i-3])
+				segmentStartIndex = i
+			}
+			numOfSpace = 0
+		}
+
+	}
+	result = append(result, statement[segmentStartIndex:])
+	return result
+}
 
 // ---------------------- Serverless Function ------------------------------
 func Handler(res http.ResponseWriter, r *http.Request) {
@@ -188,8 +207,8 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.MessageRepliedTo = update.Message.MessageID
 		// log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 		LoadForToday(update.Message.Chat.ID, &togos)
-		input := update.Message.Text[:len(update.Message.Text)]
-		terms := strings.Split(input, "   ")
+
+		terms := SplitArguments(update.Message.Text)
 		numOfTerms := len(terms)
 		var now Togo.Date = Togo.Today()
 		for i := 0; i < numOfTerms; i++ {

@@ -6,7 +6,8 @@
 # Link
     running on https://t.me/togo4bot
 # Notes:
-* Here command/param seperator is 3 SPACES (because telegram doesnt have a specific tab character)
+* Here command/param seperator is 2 SPACES (because telegram doesnt have a specific tab character)
+* More than 2 spaces is still part of the arguments; Separator is Exactly 2 spaces; nothing more of less!
 * Set these Environmental Variables for start:
 TELEGRAM_TOKEN=token
 POSTGRES_URL=postgres connection string
@@ -18,7 +19,7 @@ POSTGRES_URL=postgres connection string
 # +: New Togo:
 => ... +   title   [=  weight]    [+p   progress_till_now]   [:   description]    [+x | -x]   [@  start_date_as_how_many_days_from_now    start_time_as_hh:mm]    [NEXT_COMMAND]
 
-*   Flags order are optional, and Flags and their params must be seperated by 3 SPACES.
+*   Flags order are optional, and Flags and their params must be seperated by 2 SPACES.
 *   weight value can also be set by +w flag
 *   description value can also be set by +d flag
 # #: Show Togos
@@ -53,7 +54,7 @@ POSTGRES_URL=postgres connection string
 
 
 # Remember:
-*   The flag list separator is 3 spaces. space character will be evaluated as a part of the current flag's param. do not be mistaken.
+*   The flag list separator is 2 SPACES. space character will be evaluated as a part of the current flag's param. do not be mistaken.
 *   in 'add new togo' syntax, all flags are optional except for the title, meaning that you can simply add new togos even with specifying the title only such as:
 =>  +   new togo here
 *   use -a flag for % and # commands to expand the togos range to ALL Times.
