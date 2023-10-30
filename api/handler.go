@@ -218,7 +218,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		LoadForToday(update.Message.Chat.ID, &togos)
 
 		terms := SplitArguments(update.Message.Text)
-		Log(terms)
+		Log(&update, terms)
 		numOfTerms := len(terms)
 		var now Togo.Date = Togo.Today()
 		for i := 0; i < numOfTerms; i++ {
