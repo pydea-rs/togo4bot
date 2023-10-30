@@ -3,11 +3,12 @@ package Togo
 import (
 	// chrono "github.com/gochrono/chrono"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
-	"errors"
+
 	_ "github.com/lib/pq" // postgres
 )
 
@@ -191,7 +192,6 @@ func (togo *Togo) ToString() string {
 		togo.Id, togo.Title, togo.Description, togo.Weight, togo.Extra, togo.Progress, togo.Date.Get(), togo.Duration.Minutes())
 }
 
-
 // ---------------------- TogoList Type & Togo Receivers--------------------------------
 type TogoList []Togo
 
@@ -229,7 +229,6 @@ func (togos TogoList) ProgressMade() (progress float64, completedInPercent float
 	return
 }
 
-
 func (togos TogoList) Update(chatID int64, terms []string) string {
 	var id uint64
 	if _, err := fmt.Sscan(terms[0], &id); err != nil {
@@ -254,6 +253,32 @@ func (togos TogoList) Update(chatID int64, terms []string) string {
 
 	return togos[targetIdx].ToString()
 }
+func (togos *TogoList) RemoveIndex(index int) {
+	list := *togos
+	list = append(list[:index], list[index+1])
+	*togos = list
+}
+
+func (togos TogoList) Remove(ownerID int64, togoID uint64) error {
+	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URL"))
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	if _, err := db.Exec("DELETE FROM togos WHERE id=$1 AND owner_id=$2", togoID, ownerID); err != nil {
+		return err
+	}
+	for i := range togos {
+		if togos[i].Id == togoID && togos[i].OwnerId == ownerID {
+			togos.RemoveIndex(i)
+			break
+		}
+	}
+	return nil
+}
 
 func (togos TogoList) Get(togoID uint64) (*Togo, error) {
 	// TODO: use simple version of FOR
@@ -264,7 +289,6 @@ func (togos TogoList) Get(togoID uint64) (*Togo, error) {
 	}
 	return nil, errors.New("Can not find this togo!")
 }
-
 
 // ---------------------- Shared Functions --------------------------------
 func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
