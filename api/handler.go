@@ -15,6 +15,7 @@ import (
 const (
 	MaximumInlineButtonTextLength = 24
 	MaximumNumberOfRowItems       = 3
+	NumberOfSeparatorSpaces       = 2
 )
 
 // ---------------------- Telegram Response Struct & Interfaces --------------------------------
@@ -164,8 +165,8 @@ func SplitArguments(statement string) []string {
 		if statement[i] == ' ' {
 			numOfSpaces++
 		} else if numOfSpaces > 0 {
-			if numOfSpaces == 2 {
-				result = append(result, statement[segmentStartIndex:i-3])
+			if numOfSpaces == NumberOfSeparatorSpaces {
+				result = append(result, statement[segmentStartIndex:i-NumberOfSeparatorSpaces])
 				segmentStartIndex = i
 			}
 			numOfSpaces = 0
