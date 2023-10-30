@@ -3,7 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -124,7 +124,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 func MainKeyboardMenu() ReplyMarkup {
 	return ReplyMarkup{ResizeKeyboard: true,
 		OneTime:  false,
-		Keyboard: [][]string{{"#", "%"}, {"#   -a", "%   -a"}, {"✅"}}}
+		Keyboard: [][]string{{"#", "%"}, {"#  -a", "%  -a"}, {"✅"}}}
 }
 
 // ---------------------- tgbotapi Related Functions ------------------------------
@@ -190,7 +190,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	var togos Togo.TogoList
 
 	defer r.Body.Close()
-	body, _ := ioutil.ReadAll(r.Body)
+	body, _ := io.ReadAll(r.Body)
 	var update tgbotapi.Update
 	if err := json.Unmarshal(body, &update); err != nil {
 		log.Fatal("Error en el update →", err)
