@@ -239,7 +239,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					}
 					response.TextMsg = fmt.Sprint(now.Get(), ": DONE!")
 				} else {
-					response.TextMsg = "You must provide some values!!"
+					response.TextMsg = "You must provide at least one Parameters!"
 				}
 			case "#":
 				var results []string
@@ -290,31 +290,31 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 							}
 							response.TextMsg = allTogos.Update(update.Message.Chat.ID, terms[i+2:])
 						} else {
-							response.TextMsg = "Insufficient number of parameters!"
-
+							response.TextMsg = "You must provide at least one Parameters!"
 						}
 					} else {
 						response.TextMsg = togos.Update(update.Message.Chat.ID, terms[i+1:])
 
 					}
 				} else {
-					response.TextMsg = "Insufficient number of parameters!"
+					response.TextMsg = "You must provide at least one Parameters!"
 				}
 			// TODO: write Tick command
 			case "✅":
 				response.TextMsg = "Here are your togos for today:"
 				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo, false)
 			case "❌":
-				response.TextMsg = "Here are your togos for today:"
-				response.ReplyMarkup = InlineKeyboardMenu(togos, RemoveTogo, false)
-			case "❌  -a":
-				allTogos, err := Togo.Load(update.Message.Chat.ID, false)
-				if err != nil {
-					panic(err)
+				if i+1 < numOfTerms && terms[i+1] == "-a" {
+					allTogos, err := Togo.Load(update.Message.Chat.ID, false)
+					if err != nil {
+						panic(err)
+					}
+					response.TextMsg = "Here are your ALL togos:"
+					response.ReplyMarkup = InlineKeyboardMenu(allTogos, RemoveTogo, true)
+				} else {
+					response.TextMsg = "Here are your togos for today:"
+					response.ReplyMarkup = InlineKeyboardMenu(togos, RemoveTogo, false)
 				}
-				response.TextMsg = "Here are your ALL togos:"
-				response.ReplyMarkup = InlineKeyboardMenu(allTogos, RemoveTogo, true)
-
 			case "/now":
 				response.TextMsg = now.Get()
 
