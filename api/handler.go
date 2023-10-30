@@ -181,7 +181,7 @@ func Log(update *tgbotapi.Update, values []string) {
 	sendMessage := GetTgBotApiFunction(update)
 	var r string
 	for _, v := range values {
-		r += v
+		r += v + "\n"
 	}
 	sendMessage(r)
 }
