@@ -60,14 +60,15 @@ const (
 	None UserAction = iota
 	TickTogo
 	UpdateTogo
-	DeleteTogo
+	RemoveTogo
 	// ...
 )
 
 type CallbackData struct {
-	Action UserAction  `json:"A"`
-	ID     int64       `json:"ID,omitempty"`
-	Data   interface{} `json:"D,omitempty"`
+	Action  UserAction  `json:"A"`
+	ID      int64       `json:"ID,omitempty"`
+	Data    interface{} `json:"D,omitempty"`
+	AllDays bool        `json:"AD,omitempty"`
 }
 
 func (callbackData CallbackData) Json() string {
@@ -84,7 +85,7 @@ func LoadCallbackData(jsonString string) (data CallbackData) {
 }
 
 // ---------------------- Telegram Response Related Functions ------------------------------
-func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarkup) {
+func InlineKeyboardMenu(togos Togo.TogoList, action UserAction, allDays bool) (menu ReplyMarkup) {
 	var (
 		count     = len(togos)
 		col       = 0
@@ -116,7 +117,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 			togoTitle = fmt.Sprint(togoTitle[:MaximumInlineButtonTextLength], "...")
 		}
 		menu.InlineKeyboard[row-1][col] = InlineKeyboardMenuItem{Text: togoTitle,
-			CallbackData: (CallbackData{Action: action, ID: int64(togos[i].Id)}).Json()}
+			CallbackData: (CallbackData{Action: action, ID: int64(togos[i].Id), AllDays: allDays}).Json()}
 		col = (col + 1) % MaximumNumberOfRowItems
 	}
 	return
@@ -125,7 +126,7 @@ func InlineKeyboardMenu(togos Togo.TogoList, action UserAction) (menu ReplyMarku
 func MainKeyboardMenu() ReplyMarkup {
 	return ReplyMarkup{ResizeKeyboard: true,
 		OneTime:  false,
-		Keyboard: [][]string{{"#", "%"}, {"#  -a", "%  -a"}, {"✅"}}}
+		Keyboard: [][]string{{"#", "%"}, {"#  -a", "%  -a"}, {"✅"}, {"❌", "❌  -a"}}}
 }
 
 // ---------------------- tgbotapi Related Functions ------------------------------
@@ -206,6 +207,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 	defer func() {
 		err := recover()
 		if err != nil {
+			response.TextMsg = fmt.Sprintln("❌: ", err)
 			response.CallAPI(&res)
 		}
 	}()
@@ -298,9 +300,21 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					response.TextMsg = "Insufficient number of parameters!"
 				}
+			// TODO: write Tick command
 			case "✅":
-				response.TextMsg = "Here is your togos for today:"
-				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
+				response.TextMsg = "Here are your togos for today:"
+				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo, false)
+			case "❌":
+				response.TextMsg = "Here are your togos for today:"
+				response.ReplyMarkup = InlineKeyboardMenu(togos, RemoveTogo, false)
+			case "❌  -a":
+				allTogos, err := Togo.Load(update.Message.Chat.ID, false)
+				if err != nil {
+					panic(err)
+				}
+				response.TextMsg = "Here are your ALL togos:"
+				response.ReplyMarkup = InlineKeyboardMenu(allTogos, RemoveTogo, true)
+
 			case "/now":
 				response.TextMsg = now.Get()
 
@@ -313,16 +327,23 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		response.MessageBeingEdited = update.CallbackQuery.Message.MessageID
 		response.TargetChatID = update.CallbackQuery.Message.Chat.ID
 		response.Method = "editMessageText"
-		LoadForToday(response.TargetChatID, &togos)
 
 		callbackData := LoadCallbackData(update.CallbackQuery.Data)
-		response.TextMsg = update.CallbackQuery.Data
-		log.Println(callbackData)
+		if !callbackData.AllDays {
+			LoadForToday(response.TargetChatID, &togos)
+		} else {
+			var err error
+			togos, err = Togo.Load(update.Message.Chat.ID, false)
+			if err != nil {
+				panic(err)
+			}
+		}
+
 		switch callbackData.Action {
 		case TickTogo:
 			togo, err := togos.Get(uint64(callbackData.ID))
 			if err != nil {
-				response.TextMsg = fmt.Sprintln(err)
+				panic(err)
 			} else {
 				if (*togo).Progress < 100 {
 					(*togo).Progress = 100
@@ -330,8 +351,17 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 					(*togo).Progress = 0
 				}
 				(*togo).Update(response.TargetChatID)
-				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo)
-				response.TextMsg = "✅! Now select the next togo you want to tick ..."
+				response.ReplyMarkup = InlineKeyboardMenu(togos, TickTogo, false)
+				response.TextMsg = "✅ DONE! Now select the next togo you want to tick ..."
+			}
+		case RemoveTogo:
+			err := togos.Remove(response.TargetChatID, callbackData.ID)
+			if err == nil {
+				response.TextMsg = "❌ DONE! Now select the next togo you want to REMOVE ..."
+				response.ReplyMarkup = InlineKeyboardMenu(togos, RemoveTogo, callbackData.AllDays)
+
+			} else {
+				panic(err)
 			}
 		}
 		response.CallAPI(&res)
