@@ -333,7 +333,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 			LoadForToday(response.TargetChatID, &togos)
 		} else {
 			var err error
-			togos, err = Togo.Load(update.Message.Chat.ID, false)
+			togos, err = Togo.Load(response.TargetChatID, false)
 			if err != nil {
 				panic(err)
 			}
