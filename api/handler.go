@@ -176,6 +176,15 @@ func SplitArguments(statement string) []string {
 	return result
 }
 
+func Log(update *tgbotapi.Update, values []string) {
+	sendMessage := GetTgBotApiFunction(update)
+	var r string
+	for _, v := range values {
+		r += v
+	}
+	sendMessage(r)
+}
+
 // ---------------------- Serverless Function ------------------------------
 func Handler(res http.ResponseWriter, r *http.Request) {
 	var togos Togo.TogoList
@@ -209,6 +218,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 		LoadForToday(update.Message.Chat.ID, &togos)
 
 		terms := SplitArguments(update.Message.Text)
+		Log(terms)
 		numOfTerms := len(terms)
 		var now Togo.Date = Togo.Today()
 		for i := 0; i < numOfTerms; i++ {
