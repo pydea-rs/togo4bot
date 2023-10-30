@@ -355,7 +355,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				response.TextMsg = "✅ DONE! Now select the next togo you want to tick ..."
 			}
 		case RemoveTogo:
-			err := togos.Remove(response.TargetChatID, callbackData.ID)
+			err := togos.Remove(response.TargetChatID, uint64(callbackData.ID))
 			if err == nil {
 				response.TextMsg = "❌ DONE! Now select the next togo you want to REMOVE ..."
 				response.ReplyMarkup = InlineKeyboardMenu(togos, RemoveTogo, callbackData.AllDays)
