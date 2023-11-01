@@ -1,4 +1,4 @@
-package handler
+package notification
  
 import (
 	"fmt"
