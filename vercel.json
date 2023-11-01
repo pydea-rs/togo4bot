@@ -4,9 +4,9 @@
             "memory": 1024,
             "maxDuration": 10
         },
-    "crons": [{
+    "crons": {
         "path": "/api/notification.go",
         "schedule": "*/10 * * * *"
-    }]
+    }
     }
 }
