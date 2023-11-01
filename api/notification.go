@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"log"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -21,7 +22,9 @@ func GetTgBotApiFunction() func(chatID int64, data string) string {
 }
 
 func Handler(res http.ResponseWriter, req *http.Request) {
+	log.Println("Cron running")
 	sendMessage := GetTgBotApiFunction()
 	sendMessage(1137617789, "Cron Test")
+
 	res.Write("Successfull!")
 }
