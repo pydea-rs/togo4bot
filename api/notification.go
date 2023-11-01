@@ -25,6 +25,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	log.Println("Cron running")
 	sendMessage := GetTgBotApiFunction()
 	sendMessage(1137617789, "Cron Test")
+	log.Println("Cron done")
 
 	res.Write("Successfull!")
 }
