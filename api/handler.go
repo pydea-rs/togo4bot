@@ -61,7 +61,6 @@ const (
 	TickTogo
 	UpdateTogo
 	RemoveTogo
-	// ...
 )
 
 type CallbackData struct {
