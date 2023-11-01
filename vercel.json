@@ -8,5 +8,5 @@
     "crons": [{
         "path": "/api/notification.go",
         "schedule": "*/10 * * * *"
-    }],
+    }]
 }
