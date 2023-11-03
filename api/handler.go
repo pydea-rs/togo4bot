@@ -254,7 +254,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				sendMessage := GetTgBotApiFunction(&update)
 				if len(results) > 0 {
 					for i := range results {
-         if i >= 42 {
+         if i >= 30 {
              break
          }
 						sendMessage(results[i])
