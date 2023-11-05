@@ -9,15 +9,16 @@ import (
 )
 
 // ---------------------- tgbotapi Related Functions ------------------------------
-func GetTgBotApiFunction() func(chatID int64, data string) {
+func GetTgBotApiFunction() func(chatID int64, data string) error {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	return func(chatID int64, data string) {
 		if err == nil {
 			msg := tgbotapi.NewMessage(chatID, data)
 			// msg.ReplyToMessageID = update.Message.MessageID
 			bot.Send(msg)
+			return nil
 		}
-		return fmt.Sprintln("Fuck: ", err)
+		return err
 	}
 }
 
