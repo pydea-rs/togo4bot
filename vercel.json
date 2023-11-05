@@ -6,7 +6,7 @@
         }
     },
     "crons": [{
-        "path": "/api/notification.go",
+        "path": "/api/cron.go",
         "schedule": "*/10 * * * *"
     }]
 }
