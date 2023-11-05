@@ -129,15 +129,16 @@ func MainKeyboardMenu() ReplyMarkup {
 }
 
 // ---------------------- tgbotapi Related Functions ------------------------------
-func GetTgBotApiFunction(update *tgbotapi.Update) func(data string) {
+func GetTgBotApiFunction(update *tgbotapi.Update) func(data string) error {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
-	return func(data string) {
+	return func(data string) error {
 		if err == nil {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, data)
 			// msg.ReplyToMessageID = update.Message.MessageID
 			bot.Send(msg)
+			return nil
 		}
-		return fmt.Sprintln("Fuck: ", err)
+		return err
 	}
 }
 
