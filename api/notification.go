@@ -1,7 +1,6 @@
 package notification
  
 import (
-	"fmt"
 	"net/http"
 	"log"
 	"os"
@@ -11,7 +10,7 @@ import (
 // ---------------------- tgbotapi Related Functions ------------------------------
 func GetTgBotApiFunction() func(chatID int64, data string) error {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
-	return func(chatID int64, data string) {
+	return func(chatID int64, data string) error {
 		if err == nil {
 			msg := tgbotapi.NewMessage(chatID, data)
 			// msg.ReplyToMessageID = update.Message.MessageID
