@@ -255,10 +255,9 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				sendMessage := GetTgBotApiFunction(&update)
 				if len(results) > 0 {
 					for i := range results {
-						// if i >= 30 {
-						// 	break
-						// }
 						waiter.Add(1)
+						// newBug: result its not sorted by time
+						// possible fix: collect all togos in a day as single message
 						go func(data string) {
 							defer waiter.Done()
 							sendMessage(data)
