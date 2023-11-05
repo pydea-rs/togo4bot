@@ -259,10 +259,10 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 						// 	break
 						// }
 						waiter.Add(1)
-						go func() {
+						go func(data string) {
 							defer waiter.Done()
-							sendMessage(results[i])
-						} ()
+							sendMessage(data)
+						} (results[i])
 					}
 					response.TextMsg = "✅!"
 				} else {
