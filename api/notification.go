@@ -27,5 +27,5 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	sendMessage(1137617789, "Cron Test")
 	log.Println("Cron done")
 	response := "Successfull!"
-	res.Write(response)
+	res.Write([]byte(response))
 }
