@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-
+	"sync"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	Togo "github.com/pya-h/togo4bot/Togo"
 )
@@ -251,19 +251,24 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 				} else {
 					results = togos.ToString()
 				}
+				var waiter sync.WaitGroup
 				sendMessage := GetTgBotApiFunction(&update)
 				if len(results) > 0 {
 					for i := range results {
-         if i >= 30 {
-             break
-         }
-						sendMessage(results[i])
+						// if i >= 30 {
+						// 	break
+						// }
+						waiter.Add(1)
+						go func() {
+							defer waiter.Done()
+							sendMessage(results[i])
+						} ()
 					}
 					response.TextMsg = "✅!"
 				} else {
 					response.TextMsg = "Nothing!"
 				}
-
+				waiter.Wait()
 			case "%":
 				var target *Togo.TogoList = &togos
 				scope := "Today's"
