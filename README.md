@@ -2,6 +2,8 @@
     Telegram bot (By webhook) version of TogoFor. for managing my todos, in order to make me go for them.
     With many extra features and Memory/Performance & Coding optimization.
     This bot application is running on Vercel as a Serverless Function bot.
+# Notice:
+    - This version of togo4 bot doesnt have Togo Schedular, because of Serverless function bot desgin and Vercel free account limitations.
 # Language: GO
 # Link
     running on https://t.me/togo4bot
