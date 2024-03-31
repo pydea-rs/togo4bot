@@ -14,8 +14,6 @@ import (
 
 var lastUsedId uint64 = 0
 
-// var taskScheduler chrono.TaskScheduler = chrono.NewDefaultTaskScheduler()
-
 // ---------------------- Date/Time Struct & Date Receivers --------------------------------
 type Date struct{ time.Time }
 
@@ -78,20 +76,6 @@ func (togo *Togo) Save() uint64 {
 		return uint64(id)
 	}
 	return 0
-}
-
-func (togo *Togo) Schedule() {
-	/*_, err := taskScheduler.Schedule(func(ctx context.Context) {
-		fmt.Println("\nYour Next Togo:\n", togo.ToString(), "\n> ")
-		fmt.Print()
-	}, chrono.WithTime(togo.Date.Time))
-
-	if err != nil {
-		panic(err)
-	} else {
-		// log.Println("Togo: ", togo.Title, " Successfully scheduled for: ", togo.Date.Get())
-	}*/
-
 }
 
 func isCommand(term string) bool {
@@ -336,9 +320,6 @@ func Load(ownerId int64, justToday bool) (togos TogoList, err error) {
 				panic(err)
 			}
 			if togo.Date.Short() == now.Short() {
-				if togo.Date.After(now.Time) {
-					togo.Schedule()
-				}
 				togos = togos.Add(&togo)
 			} else if !justToday {
 				togos = togos.Add(&togo)

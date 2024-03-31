@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	Togo "github.com/pya-h/togo4bot/Togo"
 )
@@ -149,13 +150,8 @@ func LoadForToday(chatId int64, togos *Togo.TogoList) {
 		fmt.Println("Loading failed: ", err)
 	}
 	*togos = tg
-
-	/*
-		today := time.Now()
-		// mainTaskScheduler.Schedule(func(ctx context.Context) { LoadForToday(togos) },
-		// 	chrono.WithStartTime(today.Year(), today.Month(), today.Day()+1, 0, 0, 0))
-	*/
 }
+
 func SplitArguments(statement string) []string {
 	result := make([]string, 0)
 	numOfSpaces := 0
@@ -261,7 +257,7 @@ func Handler(res http.ResponseWriter, r *http.Request) {
 						go func(data string) {
 							defer waiter.Done()
 							sendMessage(data)
-						} (results[i])
+						}(results[i])
 					}
 					response.TextMsg = "✅!"
 				} else {
